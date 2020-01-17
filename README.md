@@ -11,4 +11,4 @@
 
 ###### Документация
 
-https://oauth2.fc-zenit.101m.ru/doc/client
+https://oauth.fc-zenit.ru/doc/client
