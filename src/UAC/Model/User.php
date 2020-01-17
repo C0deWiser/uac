@@ -16,6 +16,7 @@ use League\OAuth2\Client\Provider\ResourceOwnerInterface;
  *
  * @package UAC
  * @property-read integer id
+ * @property-read string login
  * @property-read integer[] identifiers
  * @property-read Carbon created
  * @property-read Carbon updated
@@ -36,7 +37,7 @@ class User extends AnyModel implements ResourceOwnerInterface
     const MALE = 'male';
     const FEMALE = 'female';
 
-    protected $strings = ['name', 'given_name', 'parent_name', 'family_name', 'gender', 'phone'];
+    protected $strings = ['login', 'name', 'given_name', 'parent_name', 'family_name', 'gender', 'phone'];
     protected $dates = ['created', 'updated', 'entered', 'birthday'];
     protected $protected = ['id', 'created', 'updated', 'entered', 'email', 'phone'];
 
