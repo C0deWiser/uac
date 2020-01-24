@@ -57,32 +57,33 @@ abstract class AbstractClient
     }
 
     /**
-     * Отправляет пользователя на сервер авторизации за кодом доступа
-     * @param array|string|null $scope
+     * Формирует адрес авторизации, запоминает контекст, возвращает url
      * @param string $returnPath
+     * @param array|string|null $scope
+     * @return string
      */
-    public function startAuthorization($returnPath, $scope = null)
+    public function getAuthorizationUrl($returnPath, $scope = null)
     {
         $options = [];
         $options['scope'] = $scope ?: $this->defaultScopes();
 
-        $authorizationUrl = $this->provider->getAuthorizationUrl($options);
+        $url = $this->provider->getAuthorizationUrl($options);
 
         $this->context->state = $this->provider->getState();
         $this->context->response_type = 'code';
         $this->context->return_path = $returnPath;
 
-        $this->log('Start Authorization', ['url' => $authorizationUrl, 'context' => $this->context->toArray()]);
+        $this->log('Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
 
-        header('Location: ' . $authorizationUrl);
-        exit;
+        return $url;
     }
 
     /**
-     * Отправляет пользователя на сервер авторизации, чтобы разлогиниться
-     * @param string $returnPath потому надо вернуть пользователя на эту страницу
+     * Формирует адрес деавторизации, запоминает контекст, возвращает url
+     * @param $returnPath
+     * @return string
      */
-    public function startDeauthorization($returnPath)
+    public function getDeauthorizationUrl($returnPath)
     {
         $url = $this->provider->getDeauthorizationUrl();
 
@@ -90,13 +91,12 @@ abstract class AbstractClient
         $this->context->response_type = 'leave';
         $this->context->return_path = $returnPath;
 
-        $this->log('Start De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+        $this->log('Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
 
         $this->unsetAccessToken();
         $this->deauthorizeResourceOwner();
 
-        header('Location: ' . $url);
-        exit;
+        return $url;
     }
 
     /**
@@ -170,11 +170,6 @@ abstract class AbstractClient
                 $this->context->clear();
                 exit('Invalid request');
             }
-        }
-
-        if (!isset($request['code']) && !isset($request['state'])) {
-            // Отправил пользователя авторизоваться
-            $this->startAuthorization(null, $scope);
         }
     }
 
