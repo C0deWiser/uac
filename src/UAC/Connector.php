@@ -45,18 +45,25 @@ class Connector
     public $collaborators;
 
     /**
+     * @var ContextManager
+     */
+    public $context;
+
+    /**
      * Connector constructor
      * @param string $urlServer Адрес сервера авторизации
      * @param string $clientId Идентификатор приложения
      * @param string $clientSecret Секретный ключ приложения
      * @param string $redirectUri Адрес перенаправления
+     * @param ContextManager $context
      */
-    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri)
+    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri, $context = null)
     {
         $this->urlServer = $urlServer;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUri = $redirectUri;
+        $this->context = $context ?: new ContextManager();
     }
 
     public function __get($name)
@@ -81,8 +88,7 @@ class Connector
             'urlAuthorize'            => $this->urlAuthorize,
             'urlAccessToken'          => $this->urlAccessToken,
             'urlResourceOwnerDetails' => $this->urlResourceOwnerDetails,
-            'scopeSeparator'          => ' ',
-            'scopes'                  => $this->scopes
+            'scopeSeparator'          => ' '
         ];
     }
 

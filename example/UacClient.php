@@ -21,8 +21,6 @@ class UacClient extends AbstractClient
         return new static($connector, ['is_debug' => getenv('APP_DEBUG')]);
     }
 
-    protected $access_token = 'token_not_loaded';
-
     /**
      * @param User|ResourceOwnerInterface $user
      */
@@ -36,36 +34,11 @@ class UacClient extends AbstractClient
         // TODO: Implement deauthorizeResourceOwner() method.
     }
 
-    protected function setAccessToken(AccessTokenInterface $accessToken)
-    {
-        $this->access_token = $accessToken;
-
-        $_SESSION['accessToken'] = serialize($accessToken);
-    }
-
-    public function getAccessToken()
-    {
-        if ($this->access_token == 'token_not_loaded') {
-            $this->access_token = isset($_SESSION['accessToken']) ? unserialize($_SESSION['accessToken']) : null;
-        }
-        return $this->access_token;
-    }
-
-    /**
-     * Должен удалить токен из сессионного хранилища
-     * @return void
-     */
-    protected function unsetAccessToken()
-    {
-        if (isset($_SESSION['accessToken'])) {
-            unset($_SESSION['accessToken']);
-        }
-        $this->access_token = null;
-    }
-
     public function log($message, array $context = [])
     {
-        if($this->is_debug) Logger::instance()->info($message, $context);
+        if ($this->is_debug) {
+            Logger::instance()->info($message, $context);
+        }
     }
 
     public function defaultScopes()

@@ -10,8 +10,6 @@ use Codewiser\UAC\Logger;
 
 require 'config.php';
 
-//Logger::instance()->info('Callback', ['request'=>$_REQUEST, 'page'=>$_SERVER['REQUEST_URI']]);
-
 $uac = UacClient::instance();
 
 try {
@@ -23,7 +21,7 @@ try {
     // Если пользователь откуда-то пришел, то пусть идет обратно
     $uac->finishOauthProcess('/');
 
-} catch (\UAC\Exception\IdentityProviderException $e) {
+} catch (\Codewiser\UAC\Exception\IdentityProviderException $e) {
     echo "Error {$e->getCode()}: {$e->getMessage()}";
     if ($e->getDescription()) {
         echo "<p>{$e->getDescription()}</p>";

@@ -19,16 +19,20 @@ use Codewiser\UAC\Model\User;
  */
 abstract class AbstractClient
 {
-    /** @var Server $provider */
+    /** @var Server */
     protected $provider;
+
+    /** @var ContextManager */
+    protected $context;
 
     protected $is_debug = true;
 
     public function __construct(Connector $connector, $options = [])
     {
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
+        $this->context = $connector->context;
 
-        $this->is_debug = $options['is_debug'] ?? true;
+        $this->is_debug = @$options['is_debug'] ? true : false;
 
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {
@@ -43,34 +47,32 @@ abstract class AbstractClient
     /**
      * Запускает процесс авторизации пользователя, если это требуется. После завершения авторизации возвращает пользователя на страницу $returnPath
      * @param string|array|null $scope
-     * @param string|null $returnPath
+     * @param string $returnPath
      */
-    public function requireAuthorization($returnPath = null, $scope = null)
+    public function requireAuthorization($returnPath, $scope = null)
     {
         if (!$this->hasAccessToken()) {
-            $this->startAuthorization($returnPath ?: $_SERVER['REQUEST_URI'], $scope);
+            $this->startAuthorization($returnPath, $scope);
         }
     }
 
     /**
      * Отправляет пользователя на сервер авторизации за кодом доступа
      * @param array|string|null $scope
-     * @param string|null $returnPath
+     * @param string $returnPath
      */
-    public function startAuthorization($returnPath = null, $scope = null)
+    public function startAuthorization($returnPath, $scope = null)
     {
         $options = [];
         $options['scope'] = $scope ?: $this->defaultScopes();
 
         $authorizationUrl = $this->provider->getAuthorizationUrl($options);
 
-        $context = StateContext::getInstance();
+        $this->context->state = $this->provider->getState();
+        $this->context->response_type = 'code';
+        $this->context->return_path = $returnPath;
 
-        $context->setState($this->provider->getState());
-        $context->setResponseTypeCode();
-        $context->setReturnPath($returnPath);
-
-        $this->log('Start Authorization', ['url' => $authorizationUrl, 'context' => $context->toArray()]);
+        $this->log('Start Authorization', ['url' => $authorizationUrl, 'context' => $this->context->toArray()]);
 
         header('Location: ' . $authorizationUrl);
         exit;
@@ -78,19 +80,17 @@ abstract class AbstractClient
 
     /**
      * Отправляет пользователя на сервер авторизации, чтобы разлогиниться
-     * @param string|null $returnPath потому надо вернуть пользователя на эту страницу
+     * @param string $returnPath потому надо вернуть пользователя на эту страницу
      */
-    public function startDeauthorization($returnPath = null)
+    public function startDeauthorization($returnPath)
     {
         $url = $this->provider->getDeauthorizationUrl();
 
-        $context = StateContext::getInstance();
+        $this->context->state = $this->provider->getState();
+        $this->context->response_type = 'leave';
+        $this->context->return_path = $returnPath;
 
-        $context->setState($this->provider->getState());
-        $context->setResponseTypeLeave();
-        $context->setReturnPath($returnPath ?: $_SERVER['REQUEST_URI']);
-
-        $this->log('Start De-Authorization', ['url' => $url, 'context' => $context->toArray()]);
+        $this->log('Start De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
 
         $this->unsetAccessToken();
         $this->deauthorizeResourceOwner();
@@ -105,24 +105,20 @@ abstract class AbstractClient
      * @param string $finally альтернативный адрес возврата (если в истории ничего нет)
      * @return void если метод завершился, значит перенаправление не состоялось
      */
-    public function finishOauthProcess($finally = null)
+    public function finishOauthProcess($finally)
     {
-        $context = StateContext::getInstance();
-
-        if ($context->isPopup()) {
+        if (@$this->context->run_in_popup) {
             echo "<script>window.close();</script>";
-            StateContext::forget();
+            $this->context->clear();
             die();
         } else {
-            $return = $context->getReturnPath() ?: $finally;
-            StateContext::forget();
+            $return = @$this->context->return_path ?: $finally;
+            $this->context->clear();
 
             $this->log("return path: {$return}");
 
-            if ($return) {
-                header("Location: {$return}");
-                exit();
-            }
+            header("Location: {$return}");
+            exit();
         }
     }
 
@@ -132,14 +128,13 @@ abstract class AbstractClient
      * Универсальный коллбэк
      * @param array $request
      * @param array|string|null $scope
-     * @throws \UAC\Exception\IdentityProviderException
+     * @throws IdentityProviderException
+     * @throws OauthResponseException
      */
     public function callbackController(array $request, $scope = null)
     {
-        // Поднимем сохраненный в сессии контекст
-        $context = StateContext::getInstance();
 
-        $this->log('Callback', ['request' => $request, 'context' => $context->toArray()]);
+        $this->log('Callback', ['request' => $request, 'context' => $this->context->toArray()]);
 
         // Сразу обработаем ошибку
         if (isset($request['error'])) {
@@ -148,17 +143,18 @@ abstract class AbstractClient
 
         if (isset($request['state'])) {
 
-            if (!$context->is($request['state'])) {
+            if (@$this->context->state != $request['state']) {
                 // Подделка!
-                StateContext::forget();
+                $this->context->clear();
                 exit('Invalid state');
             }
 
-            if ($context->isResponseTypeLeave()) {
+            if (@$this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
                 $this->log("De-Authorization");
+                $this->deauthorizeResourceOwner();
 
-            } elseif ($context->isResponseTypeCode() && isset($request['code'])) {
+            } elseif (@$this->context->response_type == 'code' && isset($request['code'])) {
                 // Это авторизация по коду
 
                 $this->log("Got code: {$request['code']}");
@@ -171,7 +167,7 @@ abstract class AbstractClient
             } else {
 
                 // Не должно нас тут быть...
-                StateContext::forget();
+                $this->context->clear();
                 exit('Invalid request');
             }
         }
@@ -186,19 +182,30 @@ abstract class AbstractClient
      * Должен сохранить токен в сессионном хранилище
      * @param AccessToken|AccessTokenInterface $accessToken
      */
-    abstract protected function setAccessToken(AccessTokenInterface $accessToken);
+    protected function setAccessToken(AccessTokenInterface $accessToken)
+    {
+        $this->context->access_token = serialize($accessToken);
+    }
 
     /**
      * Должен достать токен из сессионного хранилища
      * @return AccessToken|AccessTokenInterface|null $accessToken
      */
-    abstract public function getAccessToken();
+    public function getAccessToken()
+    {
+        return isset($this->context->access_token) ? unserialize($this->context->access_token) : null;
+    }
 
     /**
      * Должен удалить токен из сессионного хранилища
      * @return void
      */
-    abstract protected function unsetAccessToken();
+    protected function unsetAccessToken()
+    {
+        if (isset($this->context->access_token)) {
+            unset($this->context->access_token);
+        }
+    }
 
     /**
      * Проверяет, получен ли токен доступа
@@ -247,7 +254,7 @@ abstract class AbstractClient
      *
      * @param string $code код авторизации
      * @return AccessToken|AccessTokenInterface токен доступа
-     * @throws \UAC\Exception\IdentityProviderException
+     * @throws IdentityProviderException
      */
     public function grantAuthorizationCode($code)
     {
@@ -261,7 +268,7 @@ abstract class AbstractClient
      *
      * @param AccessToken $access_token старый токен
      * @return AccessToken|AccessTokenInterface новый токен
-     * @throws \UAC\Exception\IdentityProviderException
+     * @throws IdentityProviderException
      */
     public function grantRefreshToken($access_token)
     {
@@ -275,7 +282,7 @@ abstract class AbstractClient
      *
      * @param AccessToken $access_token действующий токен
      * @return AccessToken|AccessTokenInterface токен доступа к личному кабинету
-     * @throws \UAC\Exception\IdentityProviderException
+     * @throws IdentityProviderException
      */
     public function grantUserOffice($access_token)
     {
@@ -291,7 +298,7 @@ abstract class AbstractClient
      * @param string $password пароль
      * @param string|array|null $scope
      * @return AccessToken|AccessTokenInterface токен доступа
-     * @throws \UAC\Exception\IdentityProviderException
+     * @throws IdentityProviderException
      */
     public function grantPassword($username, $password, $scope = null)
     {
@@ -308,7 +315,7 @@ abstract class AbstractClient
      *
      * @param string|array|null $scope
      * @return AccessToken|AccessTokenInterface токен доступа
-     * @throws \UAC\Exception\IdentityProviderException
+     * @throws IdentityProviderException
      */
     public function grantClientCredentials($scope = null)
     {
@@ -333,6 +340,6 @@ abstract class AbstractClient
      */
     public function setRunInPopup($runInPopup)
     {
-        StateContext::getInstance()->setPopup($runInPopup);
+        $this->context->run_in_popup = $runInPopup;
     }
 }
