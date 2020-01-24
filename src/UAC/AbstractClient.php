@@ -88,26 +88,20 @@ abstract class AbstractClient
     }
 
     /**
-     * Возвращает авторизованного пользователя на страницу, откуда была потребована авторизация
+     * Возвращает адрес страницы, куда нужно вернуть пользователя после oauth-процесса
      *
      * @param string $finally альтернативный адрес возврата (если в истории ничего нет)
-     * @return void если метод завершился, значит перенаправление не состоялось
+     * @return string
      */
-    public function finishOauthProcess($finally)
+    public function getReturnPath($finally)
     {
-        if (@$this->context->run_in_popup) {
-            echo "<script>window.close();</script>";
-            $this->context->clear();
-            die();
-        } else {
-            $return = @$this->context->return_path ?: $finally;
-            $this->context->clear();
+        $return = @$this->context->return_path ?: $finally;
 
-            $this->log("return path: {$return}");
+        $this->context->clear();
 
-            header("Location: {$return}");
-            exit();
-        }
+        $this->log("return path: {$return}");
+
+        return $return;
     }
 
     /**

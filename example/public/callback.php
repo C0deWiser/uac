@@ -19,7 +19,11 @@ try {
     }
 
     // Если пользователь откуда-то пришел, то пусть идет обратно
-    $uac->finishOauthProcess('/');
+    // Если мы были в popup, то закроем его
+    echo "<script>window.close();</script>";
+
+    header('Location: ' . $uac->getReturnPath('/'));
+    exit();
 
 } catch (\Codewiser\UAC\Exception\IdentityProviderException $e) {
     echo "Error {$e->getCode()}: {$e->getMessage()}";
