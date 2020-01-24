@@ -24,11 +24,11 @@ class ContextManager
     ];
     public function __get($name)
     {
-        return $_SESSION['oauth2'.$name];
+        return unserialize($_SESSION['oauth2'.$name]);
     }
     public function __set($name, $value)
     {
-        $_SESSION['oauth2'.$name] = $value;
+        $_SESSION['oauth2'.$name] = serialize($value);
     }
     public function __isset($name)
     {
