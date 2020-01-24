@@ -45,18 +45,6 @@ abstract class AbstractClient
     }
 
     /**
-     * Запускает процесс авторизации пользователя, если это требуется. После завершения авторизации возвращает пользователя на страницу $returnPath
-     * @param string|array|null $scope
-     * @param string $returnPath
-     */
-    public function requireAuthorization($returnPath, $scope = null)
-    {
-        if (!$this->hasAccessToken()) {
-            $this->startAuthorization($returnPath, $scope);
-        }
-    }
-
-    /**
      * Формирует адрес авторизации, запоминает контекст, возвращает url
      * @param string $returnPath
      * @param array|string|null $scope
