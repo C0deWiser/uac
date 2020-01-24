@@ -144,7 +144,10 @@ abstract class AbstractClient
                 $this->log("Got token: {$access_token->getToken()}");
 
                 $this->setAccessToken($access_token);
-                $this->authorizeResourceOwner($resource = $this->provider->getResourceOwner($access_token));
+                $resource = $this->provider->getResourceOwner($access_token);
+                $this->log("Got resource owner", $resource->toArray());
+
+                $this->authorizeResourceOwner($resource);
 
             } else {
 
