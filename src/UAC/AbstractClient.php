@@ -173,7 +173,13 @@ abstract class AbstractClient
      */
     public function getAccessToken()
     {
-        return isset($this->context->access_token) ? unserialize($this->context->access_token) : null;
+        $accessToken = isset($this->context->access_token) ? unserialize($this->context->access_token) : null;
+
+        if ($accessToken && (!is_object($accessToken) || !($accessToken instanceof AccessTokenInterface))) {
+            $accessToken = null;
+        }
+
+        return $accessToken;
     }
 
     /**
