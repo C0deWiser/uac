@@ -328,4 +328,14 @@ abstract class AbstractClient
     {
         $this->context->run_in_popup = $runInPopup;
     }
+
+    public function closePopup()
+    {
+        if (@$this->context->run_in_popup) {
+            echo "<script>window.close();</script>";
+            $this->context->clear();
+            return true;
+        }
+        return false;
+    }
 }

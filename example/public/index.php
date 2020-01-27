@@ -15,7 +15,9 @@ $uac = UacClient::instance();
 
 if ($uac->hasAccessToken()) {
     ?>
-    <p><a href="/sign-out.php">Out</a></p>
+    <p><a href="/sign-out.php">Sign-out local (keep server authorization)</a></p>
+    <p><a href="/sign-out.php?both">Sign-out local and from server</a></p>
+    <p><a href="protected.php">Authorize on demand</a></p>
     <?php
 
     $user = $uac->getResourceOwner();
@@ -23,9 +25,10 @@ if ($uac->hasAccessToken()) {
 
 } else {
     ?>
-    <p><a href="sign-in.php">Link</a></p>
+    <p><a href="sign-in.php">Authorize fullscreen</a></p>
     <p><a href="sign-in.php?popup"
-          onclick="oauth(this.href, function() {location.href = location.href}); return false;">Popup</a></p>
+          onclick="oauth(this.href, function() {location.href = location.href}); return false;">Authorize in Popup</a></p>
+    <p><a href="protected.php">Authorize on demand</a></p>
     <?php
 }
 ?>

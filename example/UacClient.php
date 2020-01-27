@@ -45,4 +45,12 @@ class UacClient extends AbstractClient
     {
         return 'phone';
     }
+
+    public function requireAuthorization($returnPath)
+    {
+        if (!$this->hasAccessToken()) {
+            header('Location: ' . $this->getAuthorizationUrl($returnPath));
+            exit;
+        }
+    }
 }

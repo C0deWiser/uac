@@ -20,12 +20,22 @@ try {
 
     // Если пользователь откуда-то пришел, то пусть идет обратно
     // Если мы были в popup, то закроем его
-    echo "<script>window.close();</script>";
-
-    header('Location: ' . $uac->getReturnPath('/'));
-    exit();
+    if (!$uac->closePopup()) {
+        header('Location: ' . $uac->getReturnPath('/'));
+        exit();
+    }
 
 } catch (\Codewiser\UAC\Exception\IdentityProviderException $e) {
+
+    if ($e->getMessage() == 'access_denied') {
+        // Авторизацию прервал сам пользователь
+        // Поэтому не считаем это ошибкой
+        if (!$uac->closePopup()) {
+            header('Location: ' . $uac->getReturnPath('/'));
+            exit();
+        }
+    }
+
     echo "Error {$e->getCode()}: {$e->getMessage()}";
     if ($e->getDescription()) {
         echo "<p>{$e->getDescription()}</p>";
