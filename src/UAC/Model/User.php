@@ -37,7 +37,7 @@ class User extends AnyModel implements ResourceOwnerInterface
     const MALE = 'male';
     const FEMALE = 'female';
 
-    protected $strings = ['login', 'name', 'given_name', 'parent_name', 'family_name', 'gender', 'phone'];
+    protected $strings = ['login', 'name', 'given_name', 'parent_name', 'family_name', 'gender'];
     protected $dates = ['created', 'updated', 'entered', 'birthday'];
     protected $protected = ['id', 'created', 'updated', 'entered', 'email', 'phone'];
 
