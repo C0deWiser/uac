@@ -81,9 +81,6 @@ abstract class AbstractClient
 
         $this->log('Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
 
-        $this->unsetAccessToken();
-        $this->deauthorizeResourceOwner();
-
         return $url;
     }
 
@@ -134,6 +131,7 @@ abstract class AbstractClient
             if (@$this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
                 $this->log("De-Authorization");
+                $this->unsetAccessToken();
                 $this->deauthorizeResourceOwner();
 
             } elseif (@$this->context->response_type == 'code' && isset($request['code'])) {
@@ -209,12 +207,12 @@ abstract class AbstractClient
      *
      * @param User|ResourceOwnerInterface $user
      */
-    abstract protected function authorizeResourceOwner($user);
+    abstract public function authorizeResourceOwner($user);
 
     /**
      * Должен локально разавторизовать пользователя.
      */
-    abstract protected function deauthorizeResourceOwner();
+    abstract public function deauthorizeResourceOwner();
 
     /**
      * Записать событие в лог

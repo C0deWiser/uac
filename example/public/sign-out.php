@@ -1,12 +1,16 @@
 <?php
 require 'config.php';
 
+$uac = UacClient::instance();
+
 if (isset($_REQUEST['both'])) {
-    $uac = UacClient::instance();
+    // Отправляем пользователя на сервер, чтобы он там деавторизовался.
+    // В колбеке деавторизуем локально.
     header('Location: ' . $uac->getDeauthorizationUrl($_SERVER['HTTP_REFERER']));
 } else {
-    $context = new \Codewiser\UAC\ContextManager();
-    unset($context->access_token);
+    // Просто деавторизуем локально пользователя,
+    // И, конечно, забудем полученный токен
+    $uac->deauthorizeResourceOwner();
     header('Location: /');
 }
 

@@ -24,14 +24,16 @@ class UacClient extends AbstractClient
     /**
      * @param User|ResourceOwnerInterface $user
      */
-    protected function authorizeResourceOwner($user)
+    public function authorizeResourceOwner($user)
     {
-        // TODO: Implement authorizeResourceOwner() method.
+        // Authorize local user
     }
 
-    protected function deauthorizeResourceOwner()
+    public function deauthorizeResourceOwner()
     {
-        // TODO: Implement deauthorizeResourceOwner() method.
+        $this->unsetAccessToken();
+
+        // Un-authorize local user
     }
 
     public function log($message, array $context = [])
