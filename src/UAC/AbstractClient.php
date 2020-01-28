@@ -119,11 +119,14 @@ abstract class AbstractClient
      */
     public function callbackController(array $request, $scope = null)
     {
-
         $this->log('Callback', ['request' => $request, 'context' => $this->context->toArray()]);
 
         // Сразу обработаем ошибку
         if (isset($request['error'])) {
+            $this->log("Got error: {$request['error']}", [
+                'description' => @$request['error_description'],
+                'uri' => @$request['error_uri']
+            ]);
             throw new OauthResponseException($request['error'], @$request['error_description'], @$request['error_uri']);
         }
 
@@ -131,18 +134,24 @@ abstract class AbstractClient
 
             if (@$this->context->state != $request['state']) {
                 // Подделка!
+                $this->log("State mismatch:", [
+                    'request' => $request['state'],
+                    'context' => @$this->context->state
+                ]);
                 $this->context->clear();
                 exit('Invalid state');
             }
 
             if (@$this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
-                $this->log("De-Authorization");
+                $this->log("Has response_type: leave");
                 $this->unsetAccessToken();
                 $this->deauthorizeResourceOwner();
 
             } elseif (@$this->context->response_type == 'code' && isset($request['code'])) {
                 // Это авторизация по коду
+
+                $this->log("Has response_type: code");
 
                 $this->log("Got code: {$request['code']}");
                 $access_token = $this->grantAuthorizationCode($request['code']);

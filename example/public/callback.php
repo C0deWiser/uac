@@ -14,7 +14,7 @@ $uac = UacClient::instance();
 
 try {
 
-    $uac->callbackController($_GET, 'phone');
+    $uac->callbackController($_GET);
 
     // Если пользователь откуда-то пришел, то пусть идет обратно
     // Если мы были в popup, то закроем его
@@ -29,7 +29,7 @@ try {
         // Авторизацию прервал сам пользователь
         // Поэтому не считаем это ошибкой
         if (!$uac->closePopup()) {
-            header('Location: ' . $uac->getReturnPath('/'));
+            header('Location: /');
             exit();
         }
     }
