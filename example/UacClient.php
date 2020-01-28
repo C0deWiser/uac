@@ -32,10 +32,8 @@ class UacClient extends AbstractClient
     /**
      * {@inheritDoc}
      */
-    public function deauthorizeResourceOwner()
+    protected function deauthorizeResourceOwner()
     {
-        $this->unsetAccessToken();
-
         // Un-authorize local user
     }
 

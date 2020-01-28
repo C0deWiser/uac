@@ -12,8 +12,8 @@ if (isset($_REQUEST['both'])) {
     // В колбеке деавторизуем локально
     header('Location: ' . $uac->getDeauthorizationUrl());
 } else {
-    // Просто деавторизуем локально пользователя
-    $uac->deauthorizeResourceOwner();
+    // Просто деавторизуем локально пользователя, забудем токен
+    $uac->unsetAccessToken();
     header('Location: /');
 }
 

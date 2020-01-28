@@ -191,7 +191,7 @@ abstract class AbstractClient
      * Должен удалить токен из сессионного хранилища
      * @return void
      */
-    protected function unsetAccessToken()
+    public function unsetAccessToken()
     {
         if (isset($this->context->access_token)) {
             unset($this->context->access_token);
@@ -217,10 +217,10 @@ abstract class AbstractClient
     abstract protected function authorizeResourceOwner($user);
 
     /**
-     * Должен локально разавторизовать пользователя и забыть токен
+     * Должен локально разавторизовать пользователя
      * @see self::unsetAccessToken()
      */
-    abstract public function deauthorizeResourceOwner();
+    abstract protected function deauthorizeResourceOwner();
 
     /**
      * Записать событие в лог
