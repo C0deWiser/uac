@@ -27,14 +27,10 @@ abstract class AbstractClient
     /** @var ContextManager */
     protected $context;
 
-    protected $is_debug = true;
-
-    public function __construct(Connector $connector, $options = [])
+    public function __construct(Connector $connector)
     {
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
         $this->context = $connector->context;
-
-        $this->is_debug = @$options['is_debug'] ? true : false;
 
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {

@@ -18,7 +18,7 @@ class UacClient extends AbstractClient
             getenv('REDIRECT_URI')
         );
 
-        return new static($connector, ['is_debug' => getenv('APP_DEBUG')]);
+        return new static($connector);
     }
 
     /**
@@ -39,9 +39,7 @@ class UacClient extends AbstractClient
 
     public function log($message, array $context = [])
     {
-        if ($this->is_debug) {
-            Logger::instance()->info($message, $context);
-        }
+        //Logger::instance()->info($message, $context);
     }
 
     public function defaultScopes()
