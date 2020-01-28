@@ -14,9 +14,7 @@ $uac = UacClient::instance();
 
 try {
 
-    if (!$uac->hasAccessToken()) {
-        $uac->callbackController($_GET, 'phone');
-    }
+    $uac->callbackController($_GET, 'phone');
 
     // Если пользователь откуда-то пришел, то пусть идет обратно
     // Если мы были в popup, то закроем его
