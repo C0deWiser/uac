@@ -1,5 +1,6 @@
 {
   "name": "codewiser/uac",
+  "description": "FC Zenit OAuth2.0 Client",
   "type": "library",
   "license": "MIT",
   "version": "v1.0",
@@ -7,6 +8,10 @@
     {
       "name": "Александр Михайлов",
       "email": "amikhailov@101media.ru"
+    },
+    {
+      "name": "Вячеслав Трунов",
+      "email": "tv@101media.ru"
     }
   ],
   "require": {
