@@ -22,13 +22,16 @@ class UacClient extends AbstractClient
     }
 
     /**
-     * @param User|ResourceOwnerInterface $user
+     * {@inheritDoc}
      */
-    public function authorizeResourceOwner($user)
+    protected function authorizeResourceOwner($user)
     {
         // Authorize local user
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function deauthorizeResourceOwner()
     {
         $this->unsetAccessToken();
@@ -48,10 +51,15 @@ class UacClient extends AbstractClient
         return 'phone';
     }
 
+    /**
+     * Отправим пользователя на oauth-сервер, если у нас нет токена
+     * @param string $returnPath после авторизации вернем пользователя на этот адрес
+     */
     public function requireAuthorization($returnPath)
     {
         if (!$this->hasAccessToken()) {
-            header('Location: ' . $this->getAuthorizationUrl($returnPath));
+            $this->setReturnPath($returnPath);
+            header('Location: ' . $this->getAuthorizationUrl());
             exit;
         }
     }

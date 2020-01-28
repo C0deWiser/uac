@@ -4,12 +4,15 @@ require 'config.php';
 $uac = UacClient::instance();
 
 if (isset($_REQUEST['both'])) {
-    // Отправляем пользователя на сервер, чтобы он там деавторизовался.
-    // В колбеке деавторизуем локально.
-    header('Location: ' . $uac->getDeauthorizationUrl($_SERVER['HTTP_REFERER']));
+
+    // После деавторизации вернем пользователя туда, откуда он пришел
+    $uac->setReturnPath($_SERVER['HTTP_REFERER']);
+
+    // Отправляем пользователя на сервер, чтобы он там деавторизовался
+    // В колбеке деавторизуем локально
+    header('Location: ' . $uac->getDeauthorizationUrl());
 } else {
-    // Просто деавторизуем локально пользователя,
-    // И, конечно, забудем полученный токен
+    // Просто деавторизуем локально пользователя
     $uac->deauthorizeResourceOwner();
     header('Location: /');
 }

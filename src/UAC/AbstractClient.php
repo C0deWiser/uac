@@ -9,6 +9,8 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 use Codewiser\UAC\Api\Facade;
 use Codewiser\UAC\Exception\OauthResponseException;
 use Codewiser\UAC\Model\User;
+use phpDocumentor\Reflection\Types\Static_;
+use phpDocumentor\Reflection\Types\This;
 
 /**
  * OAuth-клиент
@@ -46,11 +48,10 @@ abstract class AbstractClient
 
     /**
      * Формирует адрес авторизации, запоминает контекст, возвращает url
-     * @param string $returnPath
      * @param array|string|null $scope
      * @return string
      */
-    public function getAuthorizationUrl($returnPath, $scope = null)
+    public function getAuthorizationUrl($scope = null)
     {
         $options = [];
         $options['scope'] = $scope ?: $this->defaultScopes();
@@ -59,7 +60,6 @@ abstract class AbstractClient
 
         $this->context->state = $this->provider->getState();
         $this->context->response_type = 'code';
-        $this->context->return_path = $returnPath;
 
         $this->log('Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
 
@@ -68,20 +68,27 @@ abstract class AbstractClient
 
     /**
      * Формирует адрес деавторизации, запоминает контекст, возвращает url
-     * @param $returnPath
      * @return string
      */
-    public function getDeauthorizationUrl($returnPath)
+    public function getDeauthorizationUrl()
     {
         $url = $this->provider->getDeauthorizationUrl();
 
         $this->context->state = $this->provider->getState();
         $this->context->response_type = 'leave';
-        $this->context->return_path = $returnPath;
 
         $this->log('Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
 
         return $url;
+    }
+
+    /**
+     * Запоминает в сессионном хранилище адрес страницы, куда нужно будет вернуть пользователя после завершения oauth-процесса
+     * @param string $returnPath
+     */
+    public function setReturnPath($returnPath)
+    {
+        $this->context->return_path = $returnPath;
     }
 
     /**
@@ -207,10 +214,11 @@ abstract class AbstractClient
      *
      * @param User|ResourceOwnerInterface $user
      */
-    abstract public function authorizeResourceOwner($user);
+    abstract protected function authorizeResourceOwner($user);
 
     /**
-     * Должен локально разавторизовать пользователя.
+     * Должен локально разавторизовать пользователя и забыть токен
+     * @see self::unsetAccessToken()
      */
     abstract public function deauthorizeResourceOwner();
 
@@ -224,6 +232,8 @@ abstract class AbstractClient
     abstract public function log($message, array $context = []);
 
     /**
+     * Список скоупов, которые по умолчанию будут запрашиваться у сервера во время авторизации
+     *
      * @return string|array|null
      */
     abstract public function defaultScopes();
@@ -320,6 +330,7 @@ abstract class AbstractClient
     }
 
     /**
+     * Запоминает в сессионном хранилище, что oauth-процесс запущен в popup-окне
      * @param bool $runInPopup
      */
     public function setRunInPopup($runInPopup)
@@ -327,6 +338,12 @@ abstract class AbstractClient
         $this->context->run_in_popup = $runInPopup;
     }
 
+    /**
+     * Закрывает popup-окно, если oauth-процесс шёл в нём. Очищает после себя сессионное хранилище.
+     *
+     * @return bool если возвращает false, то нужно сделать перенаправление на адрес returnPath
+     * @see self::getReturnPath()
+     */
     public function closePopup()
     {
         if (@$this->context->run_in_popup) {

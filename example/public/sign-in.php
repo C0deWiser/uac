@@ -6,7 +6,10 @@ $uac = UacClient::instance();
 // Поставим флаг, что открыто в поп-апе
 $uac->setRunInPopup(isset($_REQUEST['popup']));
 
+// После авторизации вернем пользователя туда, откуда он пришел
+$uac->setReturnPath($_SERVER['HTTP_REFERER']);
+
 // Отправляем пользователя на сервер за авторизацией
-header('Location: ' . $uac->getAuthorizationUrl($_SERVER['HTTP_REFERER']));
+header('Location: ' . $uac->getAuthorizationUrl());
 
 exit;
