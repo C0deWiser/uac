@@ -23,7 +23,7 @@ try {
         exit();
     }
 
-} catch (\Codewiser\UAC\Exception\IdentityProviderException $e) {
+} catch (\Codewiser\UAC\Exception\OauthResponseException $e) {
 
     if ($e->getMessage() == 'access_denied') {
         // Авторизацию прервал сам пользователь
