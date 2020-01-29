@@ -31,7 +31,7 @@ class UacClient extends AbstractClient
         //      который пользователь указал в качестве логина.
         // Но если пользователь в качестве логина использовал номер телефона,
         //      то возьмем первый email пользователя.
-        $email = filter_var($user->login, FILTER_VALIDATE_EMAIL) ?: array_shift((array)$user->email);
+        $email = filter_var($user->login, FILTER_VALIDATE_EMAIL) ?: $user->email[0];
 
         // Теперь найдем пользователя с этим email в нашей базе данных.
         $localUser = User::find(['email' => $email])->first(); 
