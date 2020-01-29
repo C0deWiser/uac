@@ -50,7 +50,7 @@ class UacClient extends AbstractClient
     
     protected function deauthorizeResourceOwner()
     {
-        // В этом методе мы должны разавторизваоть нашего пользователя:
+        // В этом методе мы должны разавторизовать нашего пользователя:
         $_SESSION['authorized_user_id'] = null;
     }
 
@@ -58,6 +58,7 @@ class UacClient extends AbstractClient
     {
         // Здесь мы объявляем скоупы, 
         //      с которыми по умолчанию происходит авторизация пользователей.
+        // Документация: https://oauth.fc-zenit.ru/doc/oauth/scope/
         return ['phone', 'mobile'];
     }
     
@@ -73,6 +74,7 @@ class UacClient extends AbstractClient
 
 ```php
 use Codewiser\UAC\AbstractClient;
+use Codewiser\UAC\Connector;
 
 class UacClient extends AbstractClient
 {
@@ -153,19 +155,6 @@ try {
         exit();
     }
 
-} catch (\Codewiser\UAC\Exception\OauthResponseException $e) {
-
-    if ($e->getMessage() == 'access_denied') {
-        // Авторизацию прервал сам пользователь
-        // Поэтому не считаем это ошибкой
-        if (!$uac->closePopup()) {
-            header('Location: ' . $uac->getReturnPath('/'));
-            exit();
-        }
-    }
-
-    var_dump($e);
-    die();
 } catch (Exception $e) {
 
     var_dump($e);
@@ -219,7 +208,7 @@ if (!$uac->closePopup()) {
 
 Остановимся подробнее на обработке ошибок, возникающих во время авторизации. Полный их список можно найти здесь https://oauth.fc-zenit.ru/doc/oauth/authorization/the-authorization-response/
 
-Все ошибки можно разделить на три типа. Первые — которые возникают, если разработчик что-то неправильно сделал. Такие ошибки не выпадают пользователю после успешного релиза продукта.
+Все ошибки можно разделить на три типа. Первые — которые возникают, если разработчик что-то неправильно сделал. Например, напутал с `client_id`. Такие ошибки не выпадают пользователю после успешного релиза продукта.
 
 Другие ошибки — это физические ошибки на сервере. Например, `server_error` или `temporarily_unavailable`. Такие ошибки рекомендуется обработать и предложить пользователю попробовать позднее еще раз.
 
@@ -236,7 +225,7 @@ try {
         // Авторизацию прервал сам пользователь
         // Поэтому не считаем это ошибкой
         if (!$uac->closePopup()) {
-            header('Location: ' . $uac->getReturnPath('/', $e));
+            header('Location: ' . $uac->getReturnPath('/'));
             exit();
         }
     }
