@@ -223,7 +223,6 @@ abstract class AbstractClient
 
     /**
      * Должен локально разавторизовать пользователя
-     * @see self::unsetAccessToken()
      */
     abstract protected function deauthorizeResourceOwner();
 

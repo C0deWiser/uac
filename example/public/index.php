@@ -17,7 +17,7 @@ if ($uac->hasAccessToken()) {
     ?>
     <p><a href="/sign-out.php">Sign-out local (keep server authorization)</a></p>
     <p><a href="/sign-out.php?both">Sign-out local and from server</a></p>
-    <p><a href="protected.php">Authorize on demand</a></p>
+    <p><a href="protected.php">Protected page (Authorization required)</a></p>
     <?php
 
     $user = $uac->getResourceOwner();

@@ -29,7 +29,8 @@ try {
         // Авторизацию прервал сам пользователь
         // Поэтому не считаем это ошибкой
         if (!$uac->closePopup()) {
-            header('Location: /');
+            $_SESSION['oauth-exception'] = serialize($e);
+            header('Location: ' . $uac->getReturnPath('/'));
             exit();
         }
     }

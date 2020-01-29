@@ -54,6 +54,12 @@ class UacClient extends AbstractClient
     public function requireAuthorization($returnPath)
     {
         if (!$this->hasAccessToken()) {
+            if (isset($_SESSION['oauth-exception'])) {
+                unset($_SESSION['oauth-exception']);
+                header('HTTP/1.0 403 Forbidden');
+                echo 'Authorization Required!';
+                die();
+            }
             $this->setReturnPath($returnPath);
             header('Location: ' . $this->getAuthorizationUrl());
             exit;
