@@ -19,6 +19,7 @@ foreach ($variables as $key => $value) {
 
 require '../../vendor/autoload.php';
 require '../UacClient.php';
+require '../Context.php';
 $classLoader = new \Composer\Autoload\ClassLoader();
 $classLoader->addPsr4("Test\\", 'tests/Test', true);
 $classLoader->register();

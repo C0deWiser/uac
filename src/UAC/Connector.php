@@ -45,7 +45,7 @@ class Connector
     public $collaborators;
 
     /**
-     * @var ContextManager
+     * @var AbstractContext
      */
     public $context;
 
@@ -55,15 +55,15 @@ class Connector
      * @param string $clientId Идентификатор приложения
      * @param string $clientSecret Секретный ключ приложения
      * @param string $redirectUri Адрес перенаправления
-     * @param ContextManager $context
+     * @param AbstractContext $context
      */
-    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri, $context = null)
+    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri, $context)
     {
         $this->urlServer = $urlServer;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUri = $redirectUri;
-        $this->context = $context ?: new ContextManager();
+        $this->context = $context;
     }
 
     public function __get($name)

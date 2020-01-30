@@ -15,7 +15,8 @@ class UacClient extends AbstractClient
             getenv('OAUTH_SERVER_URL'),
             getenv('CLIENT_ID'),
             getenv('CLIENT_SECRET'),
-            getenv('REDIRECT_URI')
+            getenv('REDIRECT_URI'),
+            new Context()
         );
 
         return new static($connector);
@@ -39,7 +40,7 @@ class UacClient extends AbstractClient
 
     public function log($message, array $context = [])
     {
-        //Logger::instance()->info($message, $context);
+        Logger::instance()->info($message, $context);
     }
 
     public function defaultScopes()

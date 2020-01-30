@@ -24,7 +24,7 @@ abstract class AbstractClient
     /** @var Server */
     protected $provider;
 
-    /** @var ContextManager */
+    /** @var AbstractContext */
     protected $context;
 
     public function __construct(Connector $connector)
@@ -95,11 +95,9 @@ abstract class AbstractClient
      */
     public function getReturnPath($finally)
     {
-        $return = @$this->context->return_path ?: $finally;
+        $return = $this->context->return_path ?: $finally;
 
-        $this->context->clear();
-
-        $this->log("return path: {$return}");
+        $this->log("Got return_path: {$return}");
 
         return $return;
     }
@@ -109,13 +107,12 @@ abstract class AbstractClient
      *
      * Универсальный коллбэк
      * @param array $request
-     * @param array|string|null $scope
      * @throws IdentityProviderException
      * @throws OauthResponseException
      */
-    public function callbackController(array $request, $scope = null)
+    public function callbackController(array $request)
     {
-        $this->log('Callback', ['request' => $request, 'context' => $this->context->toArray()]);
+        $this->log('Callback', ['request' => $request]);
 
         // Сразу обработаем ошибку
         if (isset($request['error'])) {
@@ -128,23 +125,22 @@ abstract class AbstractClient
 
         if (isset($request['state'])) {
 
-            if (@$this->context->state != $request['state']) {
+            if (!$this->context->restoreContext($request['state'])) {
                 // Подделка!
-                $this->log("State mismatch:", [
-                    'request' => $request['state'],
-                    'context' => @$this->context->state
-                ]);
-                $this->context->clear();
+                $this->log("State mismatch:", ['request' => $request]);
                 exit('Invalid state');
             }
 
-            if (@$this->context->response_type == 'leave') {
+            $this->log('Got context', $this->context->toArray());
+
+            if ($this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
                 $this->log("Has response_type: leave");
                 $this->unsetAccessToken();
                 $this->deauthorizeResourceOwner();
+                $this->log("User signed out");
 
-            } elseif (@$this->context->response_type == 'code' && isset($request['code'])) {
+            } elseif ($this->context->response_type == 'code' && isset($request['code'])) {
                 // Это авторизация по коду
 
                 $this->log("Has response_type: code");
@@ -158,11 +154,12 @@ abstract class AbstractClient
                 $this->log("Got resource owner", $resource->toArray());
 
                 $this->authorizeResourceOwner($resource);
+                $this->log("User signed in");
 
             } else {
 
                 // Не должно нас тут быть...
-                $this->context->clear();
+                $this->log("I dont know what to do:", ['request' => $request, 'context' => $this->context->toArray()]);
                 exit('Invalid request');
             }
         }
@@ -350,11 +347,12 @@ abstract class AbstractClient
      */
     public function closePopup()
     {
-        if (@$this->context->run_in_popup) {
+        if ($this->context->run_in_popup) {
+            $this->log("Closing popup");
             echo "<script>window.close();</script>";
-            $this->context->clear();
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }

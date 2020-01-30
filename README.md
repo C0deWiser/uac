@@ -7,7 +7,38 @@
 
 ## Использование
 
-Во-первых, разработчик должен написать свой класс, который унаследует `\Codewiser\UAC\AbstractClient`. 
+Во-первых, разработчик должен написать свою реализацию работы с сессиями, унаследовав класс `\Codewiser\UAC\AbstractContext`. Дело в том, что разные приложения по разному работают с сессиями; кто-то хранит данные в cookies, кто-то в redis... Поди разбери )
+
+Кто помнит описание протокола OAuth, тот знает, что запрос к серверу и ответ от него сопоставляются по параметру state, который приложение сохраняет в сессии. А вместе с параметром state приложение может хранить много другой полезной информации.
+
+В самом простом случае потребуется что-то такое:
+
+```php
+class Context extends \Codewiser\UAC\AbstractContext
+{
+    protected function sessionSet($name, $value)
+    {
+        $_SESSION[$name] = $value;
+    }
+
+    protected function sessionGet($name)
+    {
+        return $_SESSION[$name];
+    }
+
+    protected function sessionHas($name)
+    {
+        return isset($_SESSION[$name]);
+    }
+
+    protected function sessionDel($name)
+    {
+        unset($_SESSION[$name]);
+    }
+}
+```
+
+Во-вторых, разработчик должен написать свой класс, который унаследует `\Codewiser\UAC\AbstractClient`. 
 Это будет OAuth-клиент приложения.
 
 Потребуется конкретизировать несколько абстрактных методов:
@@ -80,12 +111,13 @@ class UacClient extends AbstractClient
 {
     public static function instance()
     {
-        // С помощью коннектора мы передаем в класс параметры подключения к серверу.
+        // С помощью коннектора мы передаем параметры подключения к серверу.
         $connector = new Connector(
             getenv('OAUTH_SERVER_URL'),
             getenv('CLIENT_ID'),
             getenv('CLIENT_SECRET'),
-            getenv('REDIRECT_URI')
+            getenv('REDIRECT_URI'),
+            new Context()
         );
         return new static($connector);
     }
