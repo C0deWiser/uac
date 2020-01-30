@@ -85,6 +85,8 @@ abstract class AbstractClient
     public function setReturnPath($returnPath)
     {
         $this->context->return_path = $returnPath;
+
+        $this->log("Set return_path: {$returnPath}");
     }
 
     /**
@@ -95,11 +97,11 @@ abstract class AbstractClient
      */
     public function getReturnPath($finally)
     {
-        $return = $this->context->return_path ?: $finally;
+        $returnPath = $this->context->return_path ?: $finally;
 
-        $this->log("Got return_path: {$return}");
+        $this->log("Got return_path: {$returnPath}");
 
-        return $return;
+        return $returnPath;
     }
 
     /**
@@ -337,6 +339,8 @@ abstract class AbstractClient
     public function setRunInPopup($runInPopup)
     {
         $this->context->run_in_popup = $runInPopup;
+
+        $this->log("Set run_in_popup: {$runInPopup}");
     }
 
     /**
