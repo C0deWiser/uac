@@ -23,13 +23,18 @@ abstract class AbstractContext
     protected $ttl = '3600';
     protected $stateValue;
     protected $contextData = array();
+    /**
+     * Эти ключи сохраняем в контексте (то есть с привязкой к state), остальные — просто в сессии
+     * @var array
+     */
+    protected $contextKeys = array('response_type', 'return_path', 'run_in_popup');
 
     abstract protected function sessionSet($name, $value);
     abstract protected function sessionGet($name);
     abstract protected function sessionHas($name);
     abstract protected function sessionDel($name);
 
-    protected function contextKey($state)
+    protected function sessionKey($state)
     {
         return "oauth2:state:{$state}";
     }
@@ -41,7 +46,7 @@ abstract class AbstractContext
     {
         if ($this->stateValue) {
             $this->contextData['issued_at'] = time();
-            $this->sessionSet($this->contextKey($this->stateValue), serialize($this->contextData));
+            $this->sessionSet($this->sessionKey($this->stateValue), serialize($this->contextData));
         }
     }
 
@@ -53,7 +58,7 @@ abstract class AbstractContext
      */
     protected function loadIfPossible($state)
     {
-        $key = $this->contextKey($state);
+        $key = $this->sessionKey($state);
 
         if ($this->sessionHas($key)) {
             $contextData = unserialize($this->sessionGet($key));
@@ -79,60 +84,50 @@ abstract class AbstractContext
 
     public function __get($name)
     {
-        switch ($name) {
-            case 'access_token':
-                return $this->sessionGet($name);
-            case 'state':
-                return $this->stateValue;
-            default:
-                return isset($this->contextData[$name]) ? $this->contextData[$name] : null;
+        if ($name == 'state') {
+            return $this->stateValue;
+        } elseif (in_array($name, $this->contextKeys)) {
+            return isset($this->contextData[$name]) ? $this->contextData[$name] : null;
+        } else {
+            return $this->sessionGet($name);
         }
     }
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'access_token':
-                $this->sessionSet($name, $value);
-                break;
-            case 'state':
-                $this->stateValue = $value;
-                $this->saveIfPossible();
-                break;
-            default:
-                $this->contextData[$name] = $value;
-                $this->saveIfPossible();
-                break;
+        if ($name == 'state') {
+            $this->stateValue = $value;
+            $this->saveIfPossible();
+        } elseif (in_array($name, $this->contextKeys)) {
+            $this->contextData[$name] = $value;
+            $this->saveIfPossible();
+        } else {
+            $this->sessionSet($name, $value);
         }
     }
     public function __isset($name)
     {
-        switch ($name) {
-            case 'access_token':
-                return $this->sessionHas($name);
-            case 'state':
-                return (boolean)$this->stateValue;
-            default:
-                return (isset($this->contextData[$name]) && $this->contextData[$name]) ? true : false;
+        if ($name == 'state') {
+            return (boolean)$this->stateValue;
+        } elseif (in_array($name, $this->contextKeys)) {
+            return (isset($this->contextData[$name]) && $this->contextData[$name]) ? true : false;
+        } else {
+            return $this->sessionHas($name);
         }
     }
     public function __unset($name)
     {
-        switch ($name) {
-            case 'access_token':
-                $this->sessionDel($name);
-                break;
-            case 'state':
-                if ($this->stateValue) {
-                    $this->sessionDel($this->contextKey($this->stateValue));
-                    $this->stateValue = null;
-                }
-                break;
-            default:
-                if (isset($this->contextData[$name])) {
-                    unset($this->contextData[$name]);
-                }
-                $this->saveIfPossible();
-                break;
+        if ($name == 'state') {
+            if ($this->stateValue) {
+                $this->sessionDel($this->sessionKey($this->stateValue));
+                $this->stateValue = null;
+            }
+        } elseif (in_array($name, $this->contextKeys)) {
+            if (isset($this->contextData[$name])) {
+                unset($this->contextData[$name]);
+            }
+            $this->saveIfPossible();
+        } else {
+            $this->sessionDel($name);
         }
     }
 
@@ -142,7 +137,7 @@ abstract class AbstractContext
     public function clearContext()
     {
         if ($this->stateValue) {
-            $this->sessionDel($this->contextKey($this->stateValue));
+            $this->sessionDel($this->sessionKey($this->stateValue));
             $this->stateValue = null;
         }
         $this->contextData = array();
