@@ -116,15 +116,6 @@ abstract class AbstractClient
     {
         $this->log('Callback', ['request' => $request]);
 
-        // Сразу обработаем ошибку
-        if (isset($request['error'])) {
-            $this->log("Got error: {$request['error']}", [
-                'description' => @$request['error_description'],
-                'uri' => @$request['error_uri']
-            ]);
-            throw new OauthResponseException($request['error'], @$request['error_description'], @$request['error_uri']);
-        }
-
         if (isset($request['state'])) {
 
             if (!$this->context->restoreContext($request['state'])) {
@@ -134,6 +125,14 @@ abstract class AbstractClient
             }
 
             $this->log('Got context', $this->context->toArray());
+
+            if (isset($request['error'])) {
+                $this->log("Got error: {$request['error']}", [
+                    'description' => @$request['error_description'],
+                    'uri' => @$request['error_uri']
+                ]);
+                throw new OauthResponseException($request['error'], @$request['error_description'], @$request['error_uri']);
+            }
 
             if ($this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
