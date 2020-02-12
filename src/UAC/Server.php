@@ -63,6 +63,27 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return parent::getAccessToken($grant, $options);
     }
 
+    public function introspectToken($token)
+    {
+        $params = [
+            'client_id'     => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'token' => $token
+        ];
+
+        $method  = 'POST';
+        $url     = $this->urlServer . '/token_info';
+
+        $request = $this->getRequest($method, $url, [
+            'headers' => ['content-type' => 'application/x-www-form-urlencoded'],
+            'body' => http_build_query($params)
+        ]);
+
+        return $this->getParsedResponse($request);
+    }
+
+
+
     /**
      * Builds the deauthorization URL.
      *

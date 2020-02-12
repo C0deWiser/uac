@@ -288,6 +288,15 @@ abstract class AbstractClient
     }
 
     /**
+     * @param AccessToken $access_token
+     * @return TokenIntrospection
+     */
+    public function tokenIntrospection($access_token)
+    {
+        return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
+    }
+
+    /**
      * Получает токен доступа по логину и паролю
      *
      * @param string $username логин
