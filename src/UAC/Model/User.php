@@ -15,21 +15,21 @@ use League\OAuth2\Client\Provider\ResourceOwnerInterface;
  * Class ResourceOwner
  *
  * @package UAC
- * @property-read integer id
- * @property-read string login
- * @property-read integer[] identifiers
- * @property-read Carbon created
- * @property-read Carbon updated
- * @property-read Carbon entered
- * @property-read Carbon birthday
- * @property string name
- * @property string givenName
- * @property string parentName
- * @property string familyName
- * @property string gender
- * @property-read string[] email
- * @property-read string[] phone
- * @property-read array properties
+ * @property-read integer id основной идентификатор пользователя на OAuth-сервере
+ * @property-read string login логин, с которым пользователь авторизовался. Может быть телефон, email или ничего
+ * @property-read integer[] identifiers все идентификаторы пользователя на OAuth-сервере
+ * @property-read Carbon created дата регистрации пользователя
+ * @property-read Carbon updated дата последнего изменения профиля пользователя
+ * @property-read Carbon entered дата последней авторизации пользователя
+ * @property-read Carbon birthday день рождения
+ * @property string name полное имя
+ * @property string givenName имя
+ * @property string parentName отчество
+ * @property string familyName фамилия
+ * @property string gender пол
+ * @property-read string[] email адреса почты пользователя (первый — основной)
+ * @property-read string[] phone телефоны пользователя (первый — основной)
+ * @property-read array properties дополнительные свойства пользователя
  */
 class User extends AnyModel implements ResourceOwnerInterface
 {
