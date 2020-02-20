@@ -2,6 +2,8 @@
 
 namespace Codewiser\UAC;
 
+use Codewiser\UAC\Exception\Api\InvalidTokenException;
+use Codewiser\UAC\Exception\Api\RequestException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
@@ -9,8 +11,6 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 use Codewiser\UAC\Api\Facade;
 use Codewiser\UAC\Exception\OauthResponseException;
 use Codewiser\UAC\Model\User;
-use phpDocumentor\Reflection\Types\Static_;
-use phpDocumentor\Reflection\Types\This;
 
 /**
  * OAuth-клиент
@@ -288,15 +288,6 @@ abstract class AbstractClient
     }
 
     /**
-     * @param AccessToken $access_token
-     * @return TokenIntrospection
-     */
-    public function tokenIntrospection($access_token)
-    {
-        return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
-    }
-
-    /**
      * Получает токен доступа по логину и паролю
      *
      * @param string $username логин
@@ -327,6 +318,81 @@ abstract class AbstractClient
         $options = [];
         $options['scope'] = $scope;
         return $this->provider->getAccessToken('client_credentials', $options);
+    }
+
+    /**
+     * Проверяет состояние токена
+     *
+     * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
+     * @param AccessToken $access_token
+     * @return TokenIntrospection
+     */
+    public function tokenIntrospection($access_token)
+    {
+        return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
+    }
+
+    /**
+     * Авторизует поступивший запрос к API
+     *
+     * @see http://oauth.fc-zenit.ru/doc/api/fundamentals/request-validation/
+     * @param array $headers заголовки запроса (в них может быть Bearer токен)
+     * @param array $parameters параметры запроса (в них может быть access_token)
+     * @return TokenIntrospection
+     * @throws RequestException
+     */
+    public function apiRequestAuthorize($headers, $parameters)
+    {
+        $token = null;
+        if (isset($headers['Authorization'])) {
+            if (strpos($headers['Authorization'], 'Bearer') === 0) {
+                $token = substr($headers['Authorization'], 7);
+            }
+        }
+        if (!$token && isset($parameters['access_token'])) {
+            $token = $parameters['access_token'];
+        }
+
+        if (!$token) {
+            throw new RequestException();
+        }
+
+        $info = $this->tokenIntrospection(new AccessToken(['access_token' => $token]));
+        if (!$info->isActive()) {
+            throw new InvalidTokenException();
+        }
+        return $info;
+    }
+
+    /**
+     * Формирует заголовки ответа на запрос к API с ошибкой
+     *
+     * @param RequestException $e
+     */
+    public function apiRespondWithError($e)
+    {
+        header($_SERVER["SERVER_PROTOCOL"] . " " . $e->getHttpCode());
+
+        $bearer = [];
+        if ($i = $e->getRealm()) {
+            $bearer[] = 'realm="' . $i . '"';
+        }
+        if ($i = $e->getScope()) {
+            $bearer[] = 'scope="' . $i . '"';
+        }
+        if ($i = $e->getMessage()) {
+            $bearer[] = 'error="' . $i . '"';
+        }
+        if ($i = $e->getDescription()) {
+            $bearer[] = 'error_description="' . $i . '"';
+        }
+        if ($i = $e->getUri()) {
+            $bearer[] = 'error_uri="' . $i . '"';
+        }
+
+        $bearer = implode(', ', $bearer);
+
+        header("WWW-Authenticate: Bearer {$bearer}");
     }
 
     public function __get($name)

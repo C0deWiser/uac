@@ -4,6 +4,11 @@
 namespace Codewiser\UAC;
 
 
+/**
+ * Class TokenIntrospection
+ * @package Codewiser\UAC
+ * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
+ */
 class TokenIntrospection
 {
     /** @var bool */
@@ -42,7 +47,18 @@ class TokenIntrospection
     }
 
     /**
-     * @return mixed
+     * Этот токен активен?
+     * @return bool
+     */
+    public function isActive()
+    {
+        return $this->active;
+    }
+
+    /**
+     * Этот токен активен?
+     * @deprecated
+     * @return boolean
      */
     public function getActive()
     {
@@ -50,6 +66,18 @@ class TokenIntrospection
     }
 
     /**
+     * Открывает ли токен доступ к данному scope?
+     * @param $scope
+     * @return bool
+     */
+    public function hasScope($scope)
+    {
+        $scopes = explode(' ', $this->getScope());
+        return in_array($scope, $scopes);
+    }
+
+    /**
+     * К каким scope открывает доступ этот токен
      * @return string|null
      */
     public function getScope()
