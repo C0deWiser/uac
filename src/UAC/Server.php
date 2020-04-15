@@ -54,6 +54,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return $this->clientSecret;
     }
 
+    public function getServerUrl()
+    {
+        return $this->urlServer;
+    }
+
     /**
      * @inheritdoc
      * @throws IdentityProviderException
