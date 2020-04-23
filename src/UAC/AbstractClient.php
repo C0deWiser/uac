@@ -27,6 +27,8 @@ abstract class AbstractClient
     /** @var AbstractContext */
     protected $context;
 
+    protected $options = [];
+
     public function __construct(Connector $connector)
     {
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
@@ -44,13 +46,14 @@ abstract class AbstractClient
 
     /**
      * Формирует адрес авторизации, запоминает контекст, возвращает url
-     * @param array|string|null $scope
      * @return string
      */
-    public function getAuthorizationUrl($scope = null)
+    public function getAuthorizationUrl()
     {
-        $options = [];
-        $options['scope'] = $scope ?: $this->defaultScopes();
+        $options = array_merge(
+            ['scope' => $this->defaultScopes()],
+            (array)$this->options
+        );
 
         $url = $this->provider->getAuthorizationUrl($options);
 
@@ -327,7 +330,7 @@ abstract class AbstractClient
      * @param AccessToken $access_token
      * @return TokenIntrospection
      */
-    public function tokenIntrospection($access_token)
+    public function introspectToken($access_token)
     {
         return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
     }
@@ -357,7 +360,7 @@ abstract class AbstractClient
             throw new RequestException();
         }
 
-        $info = $this->tokenIntrospection(new AccessToken(['access_token' => $token]));
+        $info = $this->introspectToken(new AccessToken(['access_token' => $token]));
         if (!$info->isActive()) {
             throw new InvalidTokenException();
         }
@@ -404,6 +407,40 @@ abstract class AbstractClient
                 return $this->provider;
         }
         return null;
+    }
+
+    /**
+     * Установить список scope для следующего процесса авторизации
+     * @param string|array $scope
+     */
+    public function setScope($scope)
+    {
+        $this->options['scope'] = $scope;
+
+        $this->log("Set scope: {$scope}");
+    }
+
+    /**
+     * Установить заголовок процесса авторизации
+     * @param string $hint
+     */
+    public function setAuthorizationHint($hint)
+    {
+        $this->options['authorization_hint'] = $hint;
+
+        $this->log("Set authorization_hint: {$hint}");
+    }
+
+    /**
+     * Устанавливает значение аргумента `prompt`
+     * @see https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+     * @param string $prompt
+     */
+    public function setPrompt($prompt)
+    {
+        $this->options['prompt'] = $prompt;
+
+        $this->log("Set prompt: {$prompt}");
     }
 
     /**
