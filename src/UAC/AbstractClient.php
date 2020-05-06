@@ -34,6 +34,8 @@ abstract class AbstractClient
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
         $this->context = $connector->context;
 
+        $this->setAuthorizationHint($this->defaultAuthorizationHint());
+
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {
                 $access_token = $this->grantRefreshToken($this->getAccessToken());
@@ -242,6 +244,16 @@ abstract class AbstractClient
      * @return string|array|null
      */
     abstract public function defaultScopes();
+
+    /**
+     * Заголовок, который будет показан пользователю во время процесса авторизации
+     *
+     * @return string|null
+     */
+    public function defaultAuthorizationHint()
+    {
+        return null;
+    }
 
     public function getResourceOwner()
     {

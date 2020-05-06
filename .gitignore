@@ -2,3 +2,6 @@
 .idea/*
 .DS_Store
 */.DS_Store
+/vendor/
+/example/.env.php
+/example/public/logs/
