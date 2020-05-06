@@ -1,5 +1,7 @@
 <?php
 require 'config.php';
+$uac = UacClient::instance();
+
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +12,9 @@ require 'config.php';
     <script src="/assets/js/oauth.js"></script>
 </head>
 <body>
+<p>whoami <a href="<?php echo $uac->provider->getServerUrl() . '/oauth/v1/whoami'?>"><?php echo $uac->provider->getServerUrl() . '/oauth/v1/whoami'?></a> </p>
+<iframe src="<?php echo $uac->provider->getServerUrl() . '/oauth/v1/whoami'?>" width="100%" height="250px"></iframe>
 <?php
-$uac = UacClient::instance();
-
 if ($uac->hasAccessToken()) {
     ?>
     <p><a href="sign-out.php">Sign-out local (keep server authorization)</a></p>
