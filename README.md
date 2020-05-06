@@ -5,7 +5,8 @@
 
 Примеры использования представлены в папке `example`.
 
-1. [Использование](#usage)
+1. [Настройка](#setup)
+    1. [Скоупы и заголовок](#setup-detail)
 2. [Запрос авторизации](#authorization-request)
 3. [Получение токена](#authorization-response)
 4. [Выход](#deauthorization)
@@ -14,8 +15,8 @@
 7. [Авторизация по необходимости](#authorize-on-demand)
 8. [Организация API сервера](#api-server)
 
-<a name="usage"></a>
-## Использование 
+<a name="setup"></a>
+## Настройка 
 
 Во-первых, разработчик должен написать свою реализацию работы с сессиями, унаследовав класс `\Codewiser\UAC\AbstractContext`. Дело в том, что разные приложения по разному работают с сессиями; кто-то хранит данные в cookies, кто-то в redis... Поди разбери )
 
@@ -140,6 +141,28 @@ UacClient::instance()->getAccessToken();
 ```
 
 **Все написанное выше является художественной выдумкой, а все совпадения случайны. Разработчик не должен буквально следовать приведенным примерам.**
+
+<a name="setup-detail"></a>
+### Скоупы и заголовок
+
+При объявлении класса `UacClient` мы реализовали метод `defaultScopes`, в котором объявили `scopes`, которые нужны нашему сайту.
+Кроме это мы можем настроить заголовок, который будет отображаться пользователю во время авторизации.
+
+```php
+use Codewiser\UAC\AbstractClient;
+
+class UacClient extends AbstractClient
+{
+    public function defaultScopes()
+    {
+        return ['phone', 'mobile'];
+    }
+    public function defaultAuthorizationHint()
+    {
+        return 'Заголовок авторизации';
+    }
+}
+```
 
 <a name="authorization-request"></a>
 ## Запуск авторизации

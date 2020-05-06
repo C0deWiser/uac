@@ -106,7 +106,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function getOnlineOfficeHtml(AccessToken $token)
     {
-        $url = $this->urlServer . '/user-office';
+        $url = $this->urlServer . '/user-office/v1';
         $request = $this->getRequest('POST', $url . '/get', [
             'headers' => ['Authorization' => $token->getToken()]
         ]);
@@ -119,7 +119,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function getOnlineOfficeCss()
     {
-        $url = $this->urlServer . '/user-office';
+        $url = $this->urlServer . '/user-office/v1';
         $request = $this->getRequest('GET', $url . '/get-css');
         return $this->getParsedResponse($request);
     }
@@ -130,7 +130,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function getOnlineOfficeJs()
     {
-        $url = $this->urlServer . '/user-office';
+        $url = $this->urlServer . '/user-office/v1';
         $request = $this->getRequest('GET', $url . '/get-js');
         return $this->getParsedResponse($request);
     }
