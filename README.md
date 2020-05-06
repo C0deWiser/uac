@@ -14,6 +14,7 @@
 5. [Авто-вход](#silent-authorization)
 6. [Обработка ошибок](#error-handling)
 7. [Авторизация по необходимости](#authorize-on-demand)
+7. [Личный кабинет](#elk)
 8. [Организация API сервера](#api-server)
 
 <a name="setup"></a>
