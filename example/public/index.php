@@ -18,7 +18,7 @@ if ($uac->hasAccessToken()) {
     <p><a href="sign-out.php">Sign-out local (keep server authorization)</a></p>
     <p><a href="sign-out.php?both">Sign-out local and from server</a></p>
     <p><a href="protected.php">Protected page (Authorization required)</a></p>
-    <p><a href="elk">ELK (Authorization required)</a></p>
+    <p><a href="elk">ELK</a></p>
     <?php
 
     $user = $uac->getResourceOwner();
@@ -34,7 +34,7 @@ if ($uac->hasAccessToken()) {
     <p><a href="sign-in.php?popup"
           onclick="oauth(this.href, function() {location.href = location.href}); return false;">Authorize in Popup</a></p>
     <p><a href="protected.php">Authorize on demand</a></p>
-    <p><a href="elk">ELK. Authorize on demand</a></p>
+    <p><a href="elk">ELK</a></p>
     <?php
 }
 ?>

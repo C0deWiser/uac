@@ -101,17 +101,19 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     /**
      * Возвращает HTML-код личного кабинета пользователя
      * @param AccessToken $token
+     * @param null|string $logout_url локальный роут для деавторизации пользователя
      * @return mixed
      * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function getOnlineOfficeHtml(AccessToken $token)
+    public function getOnlineOfficeHtml(AccessToken $token, $logout_url = null)
     {
         $url = $this->urlServer . '/user-office/v1';
-        $request = $this->getRequest('POST', $url . '/get', [
+        $request = $this->getRequest('POST', $url . '/get' . ($logout_url ? "?logout_url={$logout_url}" : ""), [
             'headers' => ['Authorization' => $token->getToken()]
         ]);
         return $this->getParsedResponse($request);
     }
+
     /**
      * Возвращает стили личного кабинета пользователя
      * @return mixed
@@ -123,6 +125,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         $request = $this->getRequest('GET', $url . '/get-css');
         return $this->getParsedResponse($request);
     }
+
     /**
      * Возвращает скрипты личного кабинета пользователя
      * @return mixed

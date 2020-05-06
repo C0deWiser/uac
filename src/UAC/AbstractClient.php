@@ -35,8 +35,6 @@ abstract class AbstractClient
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
         $this->context = $connector->context;
 
-        $this->setAuthorizationHint($this->defaultAuthorizationHint());
-
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {
                 $access_token = $this->grantRefreshToken($this->getAccessToken());
@@ -54,7 +52,10 @@ abstract class AbstractClient
     public function getAuthorizationUrl()
     {
         $options = array_merge(
-            ['scope' => $this->defaultScopes()],
+            [
+                'scope' => $this->defaultScopes(),
+                'authorization_hint' => $this->defaultAuthorizationHint()
+            ],
             (array)$this->options
         );
 
@@ -274,13 +275,14 @@ abstract class AbstractClient
      *
      * Требуется подключенный jQuery ($)
      *
+     * @param null|string $logout_url локальный роут для деавторизации пользователя
      * @return UserOffice
      * @throws IdentityProviderException
      */
-    public function getOnlineOffice()
+    public function getOnlineOffice($logout_url = null)
     {
         return new UserOffice(
-            $this->provider->getOnlineOfficeHtml($this->getAccessToken()),
+            $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $logout_url),
             $this->provider->getOnlineOfficeCss(),
             $this->provider->getOnlineOfficeJs()
         );
