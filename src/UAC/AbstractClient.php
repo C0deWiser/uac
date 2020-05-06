@@ -4,6 +4,7 @@ namespace Codewiser\UAC;
 
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
+use Codewiser\UAC\Model\UserOffice;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
@@ -255,9 +256,34 @@ abstract class AbstractClient
         return null;
     }
 
+    /**
+     * Возвращает профиль авторизвованного пользователя
+     * @return ResourceOwnerInterface
+     */
     public function getResourceOwner()
     {
         return $this->provider->getResourceOwner($this->getAccessToken());
+    }
+
+    /**
+     * Возвращает личный кабинет авторизованного пользователя: html, стили и скрипты.
+     *
+     * Полученные данные нужно вставить на страницу с адресом /elk !!!
+     *
+     * Стили и скрипты встроить в подвал.
+     *
+     * Требуется подключенный jQuery ($)
+     *
+     * @return UserOffice
+     * @throws IdentityProviderException
+     */
+    public function getOnlineOffice()
+    {
+        return new UserOffice(
+            $this->provider->getOnlineOfficeHtml($this->getAccessToken()),
+            $this->provider->getOnlineOfficeCss(),
+            $this->provider->getOnlineOfficeJs()
+        );
     }
 
     /**

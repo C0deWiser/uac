@@ -11,15 +11,15 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
-$variables = (array) include '../.env.php';
+$variables = (array)include __DIR__ . '/../.env.php';
 
 foreach ($variables as $key => $value) {
     putenv("$key=$value");
 }
 
-require '../../vendor/autoload.php';
-require '../UacClient.php';
-require '../Context.php';
+require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../UacClient.php';
+require __DIR__ . '/../Context.php';
 $classLoader = new \Composer\Autoload\ClassLoader();
 $classLoader->addPsr4("Test\\", 'tests/Test', true);
 $classLoader->register();

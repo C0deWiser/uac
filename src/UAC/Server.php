@@ -73,16 +73,22 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return parent::getAccessToken($grant, $options);
     }
 
+    /**
+     * Делает запрос к OAuth-серверу, чтобы проверить переданный токен
+     * @param string $token
+     * @return mixed
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     */
     public function introspectToken($token)
     {
         $params = [
-            'client_id'     => $this->clientId,
+            'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
             'token' => $token
         ];
 
-        $method  = 'POST';
-        $url     = $this->urlServer . '/token_info';
+        $method = 'POST';
+        $url = $this->urlServer . '/token_info';
 
         $request = $this->getRequest($method, $url, [
             'headers' => ['content-type' => 'application/x-www-form-urlencoded'],
@@ -92,20 +98,55 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return $this->getParsedResponse($request);
     }
 
-
+    /**
+     * Возвращает HTML-код личного кабинета пользователя
+     * @param AccessToken $token
+     * @return mixed
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     */
+    public function getOnlineOfficeHtml(AccessToken $token)
+    {
+        $url = $this->urlServer . '/user-office';
+        $request = $this->getRequest('POST', $url . '/get', [
+            'headers' => ['Authorization' => $token->getToken()]
+        ]);
+        return $this->getParsedResponse($request);
+    }
+    /**
+     * Возвращает стили личного кабинета пользователя
+     * @return mixed
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     */
+    public function getOnlineOfficeCss()
+    {
+        $url = $this->urlServer . '/user-office';
+        $request = $this->getRequest('GET', $url . '/get-css');
+        return $this->getParsedResponse($request);
+    }
+    /**
+     * Возвращает скрипты личного кабинета пользователя
+     * @return mixed
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     */
+    public function getOnlineOfficeJs()
+    {
+        $url = $this->urlServer . '/user-office';
+        $request = $this->getRequest('GET', $url . '/get-js');
+        return $this->getParsedResponse($request);
+    }
 
     /**
      * Builds the deauthorization URL.
      *
-     * @param  array $options
+     * @param array $options
      * @return string DeAuthorization URL
      */
     public function getDeauthorizationUrl(array $options = [])
     {
-        $base   = $this->getBaseAuthorizationUrl();
+        $base = $this->getBaseAuthorizationUrl();
         $params = $this->getAuthorizationParameters($options);
         $params['response_type'] = 'leave';
-        $query  = $this->getAuthorizationQuery($params);
+        $query = $this->getAuthorizationQuery($params);
 
         return $this->appendQuery($base, $query);
     }
@@ -129,7 +170,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function fetchResource($method, $requestUri, AccessToken $token)
     {
-        $request = $this->getAuthenticatedRequest($method, $this->urlServer.$requestUri, $token);
+        $request = $this->getAuthenticatedRequest($method, $this->urlServer . $requestUri, $token);
 
         $response = $this->getParsedResponse($request);
 
@@ -141,7 +182,6 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
         return $response;
     }
-
 
 
 }
