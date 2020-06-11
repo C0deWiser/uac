@@ -30,6 +30,12 @@ abstract class AbstractClient
 
     protected $options = [];
 
+    /**
+     * Языковая версия (для вещей, где это имеет значение
+     * @var string
+     */
+    protected $locale = 'ru';
+
     public function __construct(Connector $connector)
     {
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
@@ -282,9 +288,9 @@ abstract class AbstractClient
     public function getOnlineOffice($logout_url = null)
     {
         return new UserOffice(
-            $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $logout_url),
-            $this->provider->getOnlineOfficeCss(),
-            $this->provider->getOnlineOfficeJs()
+            $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url),
+            $this->provider->getOnlineOfficeCss($this->locale),
+            $this->provider->getOnlineOfficeJs($this->locale)
         );
     }
 
@@ -509,5 +515,15 @@ abstract class AbstractClient
         } else {
             return false;
         }
+    }
+
+    /**
+     * @param string $locale
+     * @return static
+     */
+    public function setLocale($locale)
+    {
+        $this->locale = $locale;
+        return $this;
     }
 }

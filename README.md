@@ -457,8 +457,11 @@ $uac = UacClient::instance();
 
 // убедимся, что пользователь авторизован и у нас есть его токен
 $uac->requireAuthorization($_SERVER['REQUEST_URI']);
+
 // получим данные для построения личного кабинета, передадим ссылку деавторизации пользователя
-$office = $uac->getOnlineOffice('http://example.com/logout');
+$office = $uac
+    ->setLocale('en')
+    ->getOnlineOffice('http://example.com/logout');
 
 // если у вас нет своего jquery
 echo $office->assetJQuery();

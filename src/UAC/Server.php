@@ -102,39 +102,50 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      * Возвращает HTML-код личного кабинета пользователя
      * @param AccessToken $token
      * @param null|string $logout_url локальный роут для деавторизации пользователя
+     * @param string $locale язык
      * @return mixed
      * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function getOnlineOfficeHtml(AccessToken $token, $logout_url = null)
+    public function getOnlineOfficeHtml(AccessToken $token, $locale, $logout_url = null)
     {
+        $query = [
+            'locale' => $locale,
+        ];
+        if ($logout_url) {
+            $query['logout_url'] = $logout_url;
+        }
+
         $url = $this->urlServer . '/user-office/v1';
-        $request = $this->getRequest('POST', $url . '/get' . ($logout_url ? "?logout_url={$logout_url}" : ""), [
-            'headers' => ['Authorization' => $token->getToken()]
-        ]);
+        $request = $this->getRequest('POST', $url . '/get?' . http_build_query($query),
+            [
+                'headers' => ['Authorization' => $token->getToken()]
+            ]);
         return $this->getParsedResponse($request);
     }
 
     /**
      * Возвращает стили личного кабинета пользователя
+     * @param string $locale
      * @return mixed
      * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function getOnlineOfficeCss()
+    public function getOnlineOfficeCss($locale)
     {
         $url = $this->urlServer . '/user-office/v1';
-        $request = $this->getRequest('GET', $url . '/get-css');
+        $request = $this->getRequest('GET', $url . '/get-css?locale=' . $locale);
         return $this->getParsedResponse($request);
     }
 
     /**
      * Возвращает скрипты личного кабинета пользователя
+     * @param string $locale
      * @return mixed
      * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function getOnlineOfficeJs()
+    public function getOnlineOfficeJs($locale)
     {
         $url = $this->urlServer . '/user-office/v1';
-        $request = $this->getRequest('GET', $url . '/get-js');
+        $request = $this->getRequest('GET', $url . '/get-js?locale=' . $locale);
         return $this->getParsedResponse($request);
     }
 
