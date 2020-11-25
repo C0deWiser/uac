@@ -3,7 +3,7 @@
   "description": "FC Zenit OAuth2.0 Client",
   "type": "library",
   "license": "MIT",
-  "version": "v3.2.1",
+  "version": "v3.2.2",
   "authors": [
     {
       "name": "Александр Михайлов",

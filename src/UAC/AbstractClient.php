@@ -282,13 +282,14 @@ abstract class AbstractClient
      * Требуется подключенный jQuery ($)
      *
      * @param null|string $logout_url локальный роут для деавторизации пользователя
+     * @param null|string $tickets_endpoint полный адрес эндопоинта api билетов
      * @return UserOffice
      * @throws IdentityProviderException
      */
-    public function getOnlineOffice($logout_url = null)
+    public function getOnlineOffice($logout_url = null, $tickets_endpoint = null)
     {
         return new UserOffice(
-            $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url),
+            $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url, $tickets_endpoint),
             $this->provider->getOnlineOfficeCss($this->locale),
             $this->provider->getOnlineOfficeJs($this->locale)
         );

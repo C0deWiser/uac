@@ -458,10 +458,15 @@ $uac = UacClient::instance();
 // убедимся, что пользователь авторизован и у нас есть его токен
 $uac->requireAuthorization($_SERVER['REQUEST_URI']);
 
-// получим данные для построения личного кабинета, передадим ссылку деавторизации пользователя
+// получим данные для построения личного кабинета, 
+// передадим ссылку деавторизации пользователя,
+// передадим адрес api сервиса билетов
 $office = $uac
     ->setLocale('en')
-    ->getOnlineOffice('http://example.com/logout');
+    ->getOnlineOffice(
+        'http://example.com/logout',
+        'http://exapmle.com/api/tickets'
+    );
 
 // если у вас нет своего jquery
 echo $office->assetJQuery();

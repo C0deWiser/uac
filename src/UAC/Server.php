@@ -101,18 +101,22 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     /**
      * Возвращает HTML-код личного кабинета пользователя
      * @param AccessToken $token
-     * @param null|string $logout_url локальный роут для деавторизации пользователя
      * @param string $locale язык
+     * @param null|string $logout_url локальный роут для деавторизации пользователя
+     * @param null|string $tickets_endpoint полный адрес эндопоинта api билетов
      * @return mixed
      * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function getOnlineOfficeHtml(AccessToken $token, $locale, $logout_url = null)
+    public function getOnlineOfficeHtml(AccessToken $token, $locale, $logout_url = null, $tickets_endpoint = null)
     {
         $query = [
             'locale' => $locale,
         ];
         if ($logout_url) {
             $query['logout_url'] = $logout_url;
+        }
+        if ($tickets_endpoint) {
+            $query['tickets_endpoint'] = $tickets_endpoint;
         }
 
         $url = $this->urlServer . '/user-office/v1';
