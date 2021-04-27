@@ -28,6 +28,9 @@ abstract class AbstractClient
     /** @var AbstractContext */
     protected $context;
 
+    /** @var AbstractCache|null */
+    protected $cache;
+
     protected $options = [];
 
     /**
@@ -40,6 +43,7 @@ abstract class AbstractClient
     {
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
         $this->context = $connector->context;
+        $this->cache = $connector->cache;
 
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {
@@ -265,7 +269,8 @@ abstract class AbstractClient
 
     /**
      * Возвращает профиль авторизвованного пользователя
-     * @return ResourceOwnerInterface
+     * @throws \Codewiser\UAC\Exception\IdentityProviderException
+     * @return User|ResourceOwnerInterface
      */
     public function getResourceOwner()
     {
@@ -375,11 +380,24 @@ abstract class AbstractClient
      *
      * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
      * @param AccessToken $access_token
+     * @deprecated use apiRequest()
      * @return TokenIntrospection
      */
     public function introspectToken($access_token)
     {
         return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
+    }
+
+    /**
+     * Входящий запрос к API
+     *
+     * @param array $headers заголовки запроса (в них может быть Bearer токен)
+     * @param array $parameters параметры запроса (в них может быть access_token)
+     * @return ApiRequest
+     */
+    public function apiRequest($headers, $parameters)
+    {
+        return new ApiRequest($this->provider, $headers, $parameters, $this->cache);
     }
 
     /**
@@ -390,6 +408,7 @@ abstract class AbstractClient
      * @param array $parameters параметры запроса (в них может быть access_token)
      * @return TokenIntrospection
      * @throws RequestException
+     * @deprecated use apiRequest()
      */
     public function apiRequestAuthorize($headers, $parameters)
     {
@@ -418,6 +437,7 @@ abstract class AbstractClient
      * Формирует заголовки ответа на запрос к API с ошибкой
      *
      * @param RequestException $e
+     * @deprecated use apiRequest()
      */
     public function apiRespondWithError($e)
     {

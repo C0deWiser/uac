@@ -174,7 +174,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     protected function createResourceOwner(array $response, \League\OAuth2\Client\Token\AccessToken $token)
     {
-        return new User($response['me']);
+        if (isset($response['me'])) {
+            return new User($response['me']);
+        } else {
+            throw new IdentityProviderException("No resource owner info", 401, $response);
+        }
     }
 
     /**

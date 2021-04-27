@@ -495,18 +495,100 @@ echo $office->assetScripts();
     1. Если OAuth-сервер подтверждает, что он действительно выдал этот токен доступа, то сервер В выполняет запрос сервера А.
     1. Если OAuth-сервер сообщает, что токен не существует, то сервер В возвращает серверу А ошибку.
 
+### Настройка
+
+Проверка токена доступа — это лишний запрос от сервера к серверу. Для снижения нагрузки рекомендуется кешировать результаты проверки на какое-то время.
+
+Для этого разработчик должен реализовать класс `\Codewiser\UAC\AbstractCache` и передать его экземпляр в `\Codewiser\UAC\Connector`, который используется для конфигурирования всего пакета. Впрочем, кеширование — это не обязательно.
+
+### Использование
+
+Библиотека предлагает инструменты для обработки и проверки поступающих api запросов, методы получения информации о токене и его владельце, поможет сформировать корректный ответ с ошибкой.
+
+
+Во-первых, мы должны принять запрос:
+
+```php
+$uac = UacClient::instance();
+$request = $uac->apiRequest(getallheaders(), $_REQUEST);
+```
+
+Мы можем проверить поступивший запрос:
+
+```php
+$uac = UacClient::instance();
+$request = $uac->apiRequest(getallheaders(), $_REQUEST);
+
+// Убедимся, что запрос содержит токен
+$request->validate();
+
+// Убедимся, что токен действительно существует и не просрочен
+$request->authorize();
+```
+
+В принципе, эти проверки делать не обязательно; они все равно будут сделаны, если вы используете следующие методы.
+
+Проверка `scope`:
+
+```php
+$uac = UacClient::instance();
+$request = $uac->apiRequest(getallheaders(), $_REQUEST);
+
+$info = $request->introspect();
+
+if (!$info->hasScope('read')) {
+    throw new \Codewiser\UAC\Exception\Api\InsufficientScopeException('read');
+}
+```
+
+Получение пользователя:
+
+```php
+$uac = UacClient::instance();
+$request = $uac->apiRequest(getallheaders(), $_REQUEST);
+
+$user = $request->user();
+```
+
+В обоих случаях будет выброшено исключение, если токен не был передан или является недействительным.
+
+### Исключения
+
+Стандарт RFC 6750 четко описывает виды ошибок, которые имеет право возвращать api-сервер при проверке поступившего запроса. Все эти ошибки представлены следующими исключениями.
+
+Первые два исключения выбрасывает данный пакет, вторые два исключения могут быть выброшены в контроллере, если разработчик этого пожелает.
+
+* `\Codewiser\UAC\Exception\Api\RequestException`
+
+    Запрос не содержит токен.
+    
+* `\Codewiser\UAC\Exception\Api\InvalidTokenException`
+
+    Токен недействителен.
+    
+* `\Codewiser\UAC\Exception\Api\InsufficientScopeException`
+
+    Токен не дает права на использование метода api.
+    
+* `\Codewiser\UAC\Exception\Api\InvalidRequestException`
+
+    Запрос с некорректными аргументами.
+
+И наконец, типичный контроллер мог бы выглядеть следующим образом:
 
 ```php
 $uac = UacClient::instance();
 
 try {
-    // Если запрос не авторизован, то будет выброшено исключение
+    
+    $request = $uac->apiRequest(getallheaders(), $_REQUEST);
+    
     // Если запрос прошел проверку, то вернется информация о токене
-    $tokenInfo = $uac->apiRequestAuthorize(getallheaders(), $_REQUEST);
+    $tokenInfo = $request->introspect();
     
     // В контроллере разработчик должен убедиться, что токен дает доступ к функциональности 
     if (!$tokenInfo->hasScope('read')) {
-        throw new \Codewiser\UAC\Exception\Api\InsufficientScopeException('test');
+        throw new \Codewiser\UAC\Exception\Api\InsufficientScopeException('read');
     }
 
     // Разработчик проверяет наличие обязательных полей
@@ -514,13 +596,18 @@ try {
         throw new \Codewiser\UAC\Exception\Api\InvalidRequestException("Missing 'test' parameter");
     }
 
+    // Получаем владельца токена
+    $user = $request->user();
+
+    // Предоставляем запрошенную услугу    
+
     echo json_encode('ok');
 
 } catch (\Codewiser\UAC\Exception\Api\RequestException $e) {
-    $uac->apiRespondWithError($e);
+
+    // Отвечаем ошибкой в соответствии с RFC 6750
+    $request->respondWithError($e);
 }
 
 exit;
 ``` 
-
-Разработчик может переопределить методы `apiRequestAuthorize` и `apiRespondWithError`, чтобы адаптировать их поведение к своим особенностям выполнения программы.

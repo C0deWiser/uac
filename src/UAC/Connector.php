@@ -50,20 +50,27 @@ class Connector
     public $context;
 
     /**
+     * @var AbstractCache
+     */
+    public $cache;
+
+    /**
      * Connector constructor
      * @param string $urlServer Адрес сервера авторизации
      * @param string $clientId Идентификатор приложения
      * @param string $clientSecret Секретный ключ приложения
      * @param string $redirectUri Адрес перенаправления
      * @param AbstractContext $context
+     * @param AbstractCache|null $cache
      */
-    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri, $context)
+    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri, $context, $cache = null)
     {
         $this->urlServer = $urlServer;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUri = $redirectUri;
         $this->context = $context;
+        $this->cache = $cache;
     }
 
     public function __get($name)
