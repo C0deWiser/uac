@@ -120,6 +120,38 @@ class ApiRequest
     }
 
     /**
+     * Возвращает профиль владельца токена.
+     *
+     * @return User|ResourceOwnerInterface
+     * @throws RequestException
+     */
+    public function user()
+    {
+        $this->validate();
+
+        $key = 'resource-owner-' . $this->token;
+
+        if ($cache = $this->cache) {
+            if ($user = $cache->get($key)) {
+                return $user;
+            }
+        }
+
+        try {
+            $user = $this->provider->getResourceOwner(new AccessToken(['access_token' => $this->token]));
+        } catch (IdentityProviderException $e) {
+            throw new InvalidTokenException($e->getMessage());
+        }
+
+        if ($cache) {
+            $timeout = 60 * 60 * 24; // 1 день
+            $cache->put($key, $user, $timeout);
+        }
+
+        return $user;
+    }
+
+    /**
      * Возвращает токен из запроса.
      *
      * @return string
@@ -167,20 +199,5 @@ class ApiRequest
         header("WWW-Authenticate: Bearer {$bearer}");
     }
 
-    /**
-     * Возвращает профиль владельца токена.
-     *
-     * @return User|ResourceOwnerInterface
-     * @throws RequestException
-     */
-    public function user()
-    {
-        $this->validate();
 
-        try {
-            return $this->provider->getResourceOwner(new AccessToken(['access_token' => $this->token]));
-        } catch (IdentityProviderException $e) {
-            throw new InvalidTokenException();
-        }
-    }
 }
