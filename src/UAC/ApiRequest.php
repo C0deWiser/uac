@@ -41,7 +41,6 @@ class ApiRequest
      * Достает токен из запроса.
      *
      * @return string
-     * @throws RequestException
      */
     protected function extractToken()
     {
