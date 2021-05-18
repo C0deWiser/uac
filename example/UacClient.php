@@ -5,7 +5,7 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 use Codewiser\UAC\AbstractClient;
 use Codewiser\UAC\Connector;
 use Codewiser\UAC\Logger;
-use Codewiser\UAC\Model\User;
+use Codewiser\UAC\Model\ResourceOwner;
 
 class UacClient extends AbstractClient
 {

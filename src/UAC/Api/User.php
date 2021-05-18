@@ -10,21 +10,11 @@ class User extends Basement
     {
         return 'user';
     }
-    /**
-     * Получение профиля пользователя
-     * @return array
-     * @throws IdentityProviderException
-     */
-    public function GET()
-    {
-        return $this->provider->fetchResource('GET', $this->endpoint(), $this->accessToken);
-    }
 
     /**
      * Обновление профиля пользователя
      * @param array $data
      * @return array
-     * @throws IdentityProviderException
      */
     public function POST($data)
     {

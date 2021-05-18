@@ -4,14 +4,13 @@ namespace Codewiser\UAC;
 
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
-use Codewiser\UAC\Model\UserOffice;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Codewiser\UAC\Api\Facade;
 use Codewiser\UAC\Exception\OauthResponseException;
-use Codewiser\UAC\Model\User;
+use Codewiser\UAC\Model\ResourceOwner;
 
 /**
  * OAuth-клиент
@@ -232,7 +231,7 @@ abstract class AbstractClient
      *
      * Ищем пользователя у себя в базе данных. Если не находим, то добавляем. Если находим, то обновляем. Потом авторизуем.
      *
-     * @param User|ResourceOwnerInterface $user
+     * @param ResourceOwner|ResourceOwnerInterface $user
      */
     abstract protected function authorizeResourceOwner($user);
 
@@ -269,35 +268,11 @@ abstract class AbstractClient
 
     /**
      * Возвращает профиль авторизвованного пользователя
-     * @throws \Codewiser\UAC\Exception\IdentityProviderException
-     * @return User|ResourceOwnerInterface
+     * @return ResourceOwner|ResourceOwnerInterface
      */
     public function getResourceOwner()
     {
         return $this->provider->getResourceOwner($this->getAccessToken());
-    }
-
-    /**
-     * Возвращает личный кабинет авторизованного пользователя: html, стили и скрипты.
-     *
-     * Полученные данные нужно вставить на страницу с адресом /elk !!!
-     *
-     * Стили и скрипты встроить в подвал.
-     *
-     * Требуется подключенный jQuery ($)
-     *
-     * @param null|string $logout_url локальный роут для деавторизации пользователя
-     * @param null|string $tickets_endpoint полный адрес эндопоинта api билетов
-     * @return UserOffice
-     * @throws IdentityProviderException
-     */
-    public function getOnlineOffice($logout_url = null, $tickets_endpoint = null)
-    {
-        return new UserOffice(
-            $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url, $tickets_endpoint),
-            $this->provider->getOnlineOfficeCss($this->locale),
-            $this->provider->getOnlineOfficeJs($this->locale)
-        );
     }
 
     /**
@@ -325,20 +300,6 @@ abstract class AbstractClient
     {
         return $this->provider->getAccessToken('refresh_token', [
             'refresh_token' => $access_token->getRefreshToken()
-        ]);
-    }
-
-    /**
-     * Получает токен доступа для личного кабинета. Полученный токен надо сразу использовать для авторизации пользователя в его личном кабинете.
-     *
-     * @param AccessToken $access_token действующий токен
-     * @return AccessToken|AccessTokenInterface токен доступа к личному кабинету
-     * @throws IdentityProviderException
-     */
-    public function grantUserOffice($access_token)
-    {
-        return $this->provider->getAccessToken('user_office', [
-            'token' => $access_token->getToken()
         ]);
     }
 

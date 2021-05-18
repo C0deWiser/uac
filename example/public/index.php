@@ -24,9 +24,9 @@ if ($uac->hasAccessToken()) {
     <?php
 
     $user = $uac->getResourceOwner();
-    $email = filter_var($user->login, FILTER_VALIDATE_EMAIL) ?: $user->email[0];
     echo 'Access Token '.$uac->getAccessToken()->getToken().'<br>';
-    echo 'Authorization email '.$email.'<br>';
+    echo 'Authorization email '.$user->email.'<br>';
+    echo $user->name;
     echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
 
 

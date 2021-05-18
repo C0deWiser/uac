@@ -5,7 +5,7 @@ namespace Codewiser\UAC;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 use Codewiser\UAC\Exception\IdentityProviderException;
-use Codewiser\UAC\Model\User;
+use Codewiser\UAC\Model\ResourceOwner;
 
 /**
  * OAuth сервис-провайдер
@@ -61,7 +61,6 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     /**
      * @inheritdoc
-     * @throws IdentityProviderException
      */
     public function getAccessToken($grant, array $options = [])
     {
@@ -174,8 +173,8 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     protected function createResourceOwner(array $response, \League\OAuth2\Client\Token\AccessToken $token)
     {
-        if (isset($response['me'])) {
-            return new User($response['me']);
+        if (isset($response['data'])) {
+            return new ResourceOwner($response['data'], @$response['rules']);
         } else {
             throw new IdentityProviderException("No resource owner info", 401, $response);
         }

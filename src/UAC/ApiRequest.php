@@ -7,7 +7,7 @@ namespace Codewiser\UAC;
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
 use Codewiser\UAC\Exception\IdentityProviderException;
-use Codewiser\UAC\Model\User;
+use Codewiser\UAC\Model\ResourceOwner;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 
@@ -121,7 +121,7 @@ class ApiRequest
     /**
      * Возвращает профиль владельца токена.
      *
-     * @return User|ResourceOwnerInterface
+     * @return ResourceOwner|ResourceOwnerInterface
      * @throws RequestException
      */
     public function user()
