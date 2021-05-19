@@ -9,6 +9,7 @@ $uac->setRunInPopup(isset($_REQUEST['popup']));
 // После авторизации вернем пользователя туда, откуда он пришел
 $uac->setReturnPath($_SERVER['HTTP_REFERER']);
 
+$uac->setLocale('en');
 //$uac->setPrompt('none');
 
 // Отправляем пользователя на сервер за авторизацией

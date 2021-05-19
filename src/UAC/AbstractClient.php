@@ -97,12 +97,15 @@ abstract class AbstractClient
     /**
      * Запоминает в сессионном хранилище адрес страницы, куда нужно будет вернуть пользователя после завершения oauth-процесса
      * @param string $returnPath
+     * @return AbstractClient
      */
     public function setReturnPath($returnPath)
     {
         $this->context->return_path = $returnPath;
 
         $this->log("Set return_path: {$returnPath}");
+
+        return $this;
     }
 
     /**
@@ -341,7 +344,6 @@ abstract class AbstractClient
      *
      * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
      * @param AccessToken $access_token
-     * @deprecated use apiRequest()
      * @return TokenIntrospection
      */
     public function introspectToken($access_token)
@@ -440,46 +442,58 @@ abstract class AbstractClient
     /**
      * Установить список scope для следующего процесса авторизации
      * @param string|array $scope
+     * @return static
      */
     public function setScope($scope)
     {
         $this->options['scope'] = $scope;
 
         $this->log("Set scope: {$scope}");
+
+        return $this;
     }
 
     /**
      * Установить заголовок процесса авторизации
      * @param string $hint
+     * @return static
      */
     public function setAuthorizationHint($hint)
     {
         $this->options['authorization_hint'] = $hint;
 
         $this->log("Set authorization_hint: {$hint}");
+
+        return $this;
     }
 
     /**
      * Устанавливает значение аргумента `prompt`
      * @see https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
      * @param string $prompt
+     * @return static
      */
     public function setPrompt($prompt)
     {
         $this->options['prompt'] = $prompt;
 
         $this->log("Set prompt: {$prompt}");
+
+        return $this;
     }
 
     /**
      * Запоминает в сессионном хранилище, что oauth-процесс запущен в popup-окне
      * @param bool $runInPopup
+     * @return static
      */
     public function setRunInPopup($runInPopup)
     {
         $this->context->run_in_popup = $runInPopup;
 
         $this->log("Set run_in_popup: {$runInPopup}");
+
+        return $this;
     }
 
     /**
@@ -505,7 +519,8 @@ abstract class AbstractClient
      */
     public function setLocale($locale)
     {
-        $this->locale = $locale;
+        $this->options['locale'] = $locale;
+        $this->context->locale = $locale;
         return $this;
     }
 }

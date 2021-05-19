@@ -15,6 +15,8 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 {
     protected $urlServer;
 
+    protected $urlTokenIntrospection;
+
 //    public function __construct(array $options = [], array $collaborators = [])
 //    {
 //        parent::__construct($options, $collaborators);
@@ -87,7 +89,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         ];
 
         $method = 'POST';
-        $url = $this->urlServer . '/token_info';
+        $url = $this->urlTokenIntrospection;
 
         $request = $this->getRequest($method, $url, [
             'headers' => ['content-type' => 'application/x-www-form-urlencoded'],

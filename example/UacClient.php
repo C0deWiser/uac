@@ -9,8 +9,14 @@ use Codewiser\UAC\Model\ResourceOwner;
 
 class UacClient extends AbstractClient
 {
+    protected static $client;
+
     public static function instance()
     {
+        if (self::$client) {
+            return self::$client;
+        }
+
         $connector = new Connector(
             getenv('OAUTH_SERVER_URL'),
             getenv('CLIENT_ID'),
@@ -19,7 +25,8 @@ class UacClient extends AbstractClient
             new Context()
         );
 
-        return new static($connector);
+        self::$client = new static($connector);
+        return self::$client;
     }
 
     /**
