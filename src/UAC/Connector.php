@@ -12,9 +12,10 @@ namespace Codewiser\UAC;
  * Класс для конфигурирования OAuth-клиента
  * @package UAC
  *
- * @property-read string urlAuthorize Адрес страницы запроса авторизации
- * @property-read string urlAccessToken Адрес эндпоинта выдачи токенов доступа
- * @property-read string urlResourceOwnerDetails Адрес эндпоинта получения профиля пользователя
+ * @property-read string $urlAuthorize Адрес страницы запроса авторизации
+ * @property-read string $urlAccessToken Адрес эндпоинта выдачи токенов доступа
+ * @property-read string $urlResourceOwnerDetails Адрес эндпоинта получения профиля пользователя
+ * @property-read string $urlTokenIntrospection Адрес эндпоитна проверки токенов
  */
 class Connector
 {
@@ -82,6 +83,8 @@ class Connector
                 return $this->urlServer.'/oauth/token/';
             case 'urlResourceOwnerDetails':
                 return $this->urlServer.(new Api\User())->endpoint();
+            case 'urlTokenIntrospection':
+                return $this->urlServer.'/token_info';
         }
     }
 
@@ -95,6 +98,7 @@ class Connector
             'urlAuthorize'            => $this->urlAuthorize,
             'urlAccessToken'          => $this->urlAccessToken,
             'urlResourceOwnerDetails' => $this->urlResourceOwnerDetails,
+            'urlTokenIntrospection'   => $this->urlTokenIntrospection,
             'scopeSeparator'          => ' '
         ];
     }

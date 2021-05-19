@@ -9,6 +9,7 @@ namespace Codewiser\UAC;
  * Store some data in session
  *
  * @property $state
+ * @property $locale
  * @property $response_type
  * @property $return_path
  * @property $run_in_popup
@@ -27,7 +28,7 @@ abstract class AbstractContext
      * Эти ключи сохраняем в контексте (то есть с привязкой к state), остальные — просто в сессии
      * @var array
      */
-    protected $contextKeys = array('response_type', 'return_path', 'run_in_popup');
+    protected $contextKeys = array('response_type', 'return_path', 'run_in_popup', 'locale');
 
     abstract protected function sessionSet($name, $value);
     abstract protected function sessionGet($name);

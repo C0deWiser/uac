@@ -8,7 +8,6 @@ use Codewiser\UAC\Server;
 abstract class Basement
 {
     protected $prefix = 'api';
-    protected $version = 'v3.0';
     /**
      * @var Server
      */
@@ -35,7 +34,6 @@ abstract class Basement
 
         $path = [];
         $path[] = $this->prefix;
-        $path[] = $this->version;
         if ($this->method()) {
             $path[] = $this->method();
         }

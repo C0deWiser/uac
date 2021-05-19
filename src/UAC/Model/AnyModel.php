@@ -3,111 +3,73 @@
 namespace Codewiser\UAC\Model;
 
 use Carbon\Carbon;
+use Codewiser\UAC\Model\Rules\HasRules;
+use Codewiser\UAC\Model\Rules\Rules;
 
 abstract class AnyModel
 {
-    protected $data;
-    protected $sanitized;
+    use HasRules;
 
-    protected $strings = [];
-    protected $dates = [];
-    protected $booleans = [];
-    protected $emails = [];
+    protected $data = [];
 
-    protected $protected = [];
     /**
-     * [property -> class]
+     * Cast attributes.
+     *
      * @var array
      */
+    protected $casts = [];
 
-    public function __construct($data)
+    public function __construct($data, $rules = [])
     {
         $this->data = $data;
-
-        $this->sanitizeData();
+        $this->rules = new Rules($rules);
     }
 
     /**
+     * Cast attribute into object.
+     *
+     * @param string $attribute
+     * @param mixed $value
      * @return mixed
      */
-    public function getSanitized()
+    protected function cast($attribute, $value)
     {
-        return $this->sanitized;
-    }
+        if (isset($this->casts[$attribute])) {
+            $properties = $this->casts[$attribute];
 
-    protected function sanitizeData()
-    {
-        foreach ($this->data as $key => $value) {
-            if (in_array($key, $this->dates)) {
-                $this->sanitized[$key] = $this->sanitizeDate($value);
-            } elseif (in_array($key, $this->strings)) {
-                $this->sanitized[$key] = $this->sanitizeString($value);
-            } elseif (in_array($key, $this->booleans)) {
-                $this->sanitized[$key] = $this->sanitizeBoolean($value);
-            } elseif (in_array($key, $this->emails)) {
-                $this->sanitized[$key] = $this->sanitizeEmail($value);
-            } else {
-                $this->sanitized[$key] = $value;
+            switch (true) {
+                case is_array($properties):
+                    $class = current($properties);
+                    $array = [];
+                    foreach ((array)$value as $item) {
+                        $array[] = new $class($item);
+                    }
+                    return $array;
+
+                case strpos($properties, 'datetime') === 0:
+                    return Carbon::parse($value);
+
+                default:
+                    return new $properties($value);
             }
         }
-    }
 
-    protected function sanitizeNumber($value)
-    {
-        return $value * 1.0;
-    }
-    protected function sanitizeEmail($value)
-    {
-        return filter_var($value, FILTER_SANITIZE_EMAIL);
-    }
-    protected function sanitizeBoolean($value)
-    {
-        return !!$value;
-    }
-    protected function sanitizeString($value)
-    {
-        return filter_var($value, FILTER_SANITIZE_STRING);
-    }
-    protected function sanitizeDate($value)
-    {
-        return $value ? Carbon::parse($value) : null;
+        return $value;
     }
 
     public function toArray()
     {
-        $data = [];
-        foreach ($this->sanitized as $key => $value) {
-            $data[$key] = $this->primitive($value);
-        }
-        return $data;
+        return $this->data;
     }
-    protected function primitive($value)
+
+    public function __isset($name)
     {
-        if ($value instanceof AnyModel) {
-            return $value->toArray();
-        }
-        if ($value instanceof Carbon) {
-            return $value->format('c');
-        }
-        return $value;
+        return isset($this->data[$name]);
     }
 
     public function __get($name)
     {
-        $key = $this->snake($name);
-        if (isset($this->sanitized[$key])) {
-            return $this->sanitized[$key];
-        }
+        return $this->cast($name, @$this->data[$name]);
     }
-
-    private function snake($input) {
-        preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
-        $ret = $matches[0];
-        foreach ($ret as &$match) {
-            $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
-        }
-        return implode('_', $ret);
-    }
-
 
 }

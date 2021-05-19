@@ -22,13 +22,13 @@ if ($uac->hasAccessToken()) {
     <p><a href="protected.php">Protected page (Authorization required)</a></p>
     <p><a href="elk">ELK</a></p>
     <?php
+    echo 'Access Token '.$uac->getAccessToken()->getToken().'<br>';
+    echo "<pre>" . print_r($uac->introspectToken($uac->getAccessToken())->toArray(), true) . "</pre>";
 
     $user = $uac->getResourceOwner();
-    $email = filter_var($user->login, FILTER_VALIDATE_EMAIL) ?: $user->email[0];
-    echo 'Access Token '.$uac->getAccessToken()->getToken().'<br>';
-    echo 'Authorization email '.$email.'<br>';
-    echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
 
+    echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
+    echo "<pre>" . print_r($user->rules()->toArray(), true) . "</pre>";
 
 } else {
     ?>

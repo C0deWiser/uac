@@ -7,15 +7,14 @@
 
 1. [Настройка](#setup)
     1. [Скоупы и заголовок](#setup-detail)
-2. [Запрос авторизации](#authorization-request)
-3. [Получение токена](#authorization-response)
-4. [Выход](#deauthorization)
-5. [Авторизация в попап-окне](#popup-authorization)
-5. [Авто-вход](#silent-authorization)
-6. [Обработка ошибок](#error-handling)
-7. [Авторизация по необходимости](#authorize-on-demand)
-7. [Личный кабинет](#elk)
-8. [Организация API сервера](#api-server)
+1. [Запрос авторизации](#authorization-request)
+1. [Получение токена](#authorization-response)
+1. [Выход](#deauthorization)
+1. [Авторизация в попап-окне](#popup-authorization)
+1. [Авто-вход](#silent-authorization)
+1. [Обработка ошибок](#error-handling)
+1. [Авторизация по необходимости](#authorize-on-demand)
+1. [Организация API сервера](#api-server)
 
 <a name="setup"></a>
 ## Настройка 
@@ -66,24 +65,17 @@ class UacClient extends AbstractClient
         // Этот метод получает на вход объект `Codewiser\UAC\Model\User`.
         // Этот объект является представлением профиля пользователя, 
         //      который только что авторизовался на сервере.
-        // Документация: https://oauth.fc-zenit.ru/doc/api/objects/user/
     
         // Мы должны найти соответствующего локального пользователя,
         //      и авторизовать его.
     
-        // Например, будем искать пользователя по email, 
-        //      который пользователь указал в качестве логина.
-        // Но если пользователь в качестве логина использовал номер телефона,
-        //      то возьмем первый email пользователя.
-        $email = filter_var($user->login, FILTER_VALIDATE_EMAIL) ?: $user->email[0];
-
-        // Теперь найдем пользователя с этим email в нашей базе данных.
-        $localUser = User::find(['email' => $email])->first(); 
+        // Найдем пользователя по его email в нашей базе данных.
+        $localUser = User::find(['email' => $user->email])->first(); 
     
         // Если такого пользователя нет, то создадим его.
         if (!$localUser) {
             $localUser = new User();
-            $localUser->email = $email;
+            $localUser->email = $user->email;
             $localUser->name = $user->name;
             $localUser->save();
         }
@@ -102,7 +94,6 @@ class UacClient extends AbstractClient
     {
         // Здесь мы объявляем скоупы, 
         //      с которыми по умолчанию происходит авторизация пользователей.
-        // Документация: https://oauth.fc-zenit.ru/doc/oauth/scope/
         return ['phone', 'mobile'];
     }
     
@@ -114,6 +105,8 @@ class UacClient extends AbstractClient
 }
 ```
 
+Кроме этого, можно реализовать класс `\Codewiser\UAC\AbstractCache`, который будет кешировать полученные токены, снижая количество запросов к серверу авторизации.
+
 Для удобства рекомендуется написать статический метод инстанциирования экземпляра класса.
 
 ```php
@@ -122,17 +115,26 @@ use Codewiser\UAC\Connector;
 
 class UacClient extends AbstractClient
 {
+    protected static $client;
+
     public static function instance()
     {
+        if (self::$client) {
+            return self::$client;
+        }
+
         // С помощью коннектора мы передаем параметры подключения к серверу.
         $connector = new Connector(
             getenv('OAUTH_SERVER_URL'),
             getenv('CLIENT_ID'),
             getenv('CLIENT_SECRET'),
             getenv('REDIRECT_URI'),
-            new Context()
+            new Context(),
+            new Cache()
         );
-        return new static($connector);
+
+        self::$client = new static($connector);
+        return self::$client;
     }
 }
 ```
@@ -442,40 +444,6 @@ UacClient::instance()->requireAuthorization($_SERVER['REQUEST_URI']);
 И получается, что если пользователь хочет попасть на защищенную страницу, мы отправляем его авторизовываться. 
 А если он передумал авторизовываться, то мы показываем ему 403 ошибку. 
 Но стоит пользователю обновить страницу, как сценарий начинается заново — всё благодаря тому, что мы каждый раз очищаем сессию от сохраненной ошибки.
-
-<a name="elk"></a>
-## Личный кабинет
-
-Получив токен доступа мы можем встроить на свой сайт личный кабинет пользователя.
-
-Напомним, что личный кабинет должен иметь адрес `/elk`, а для его работоспособности необходим полдключенный `jQuery`.
-
-_/elk/index.php_
-
-```php
-$uac = UacClient::instance();
-
-// убедимся, что пользователь авторизован и у нас есть его токен
-$uac->requireAuthorization($_SERVER['REQUEST_URI']);
-
-// получим данные для построения личного кабинета, 
-// передадим ссылку деавторизации пользователя,
-// передадим адрес api сервиса билетов
-$office = $uac
-    ->setLocale('en')
-    ->getOnlineOffice(
-        'http://example.com/logout',
-        'http://exapmle.com/api/tickets'
-    );
-
-// если у вас нет своего jquery
-echo $office->assetJQuery();
-
-echo $office->assetHtml();
-echo $office->assetStyles();
-echo $office->assetScripts();
-```
-
 
 <a name="api-server"></a>
 ## Организация API сервера
