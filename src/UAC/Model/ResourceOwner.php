@@ -24,8 +24,8 @@ use League\OAuth2\Client\Provider\ResourceOwnerInterface;
  * @property-read Carbon $birthday День рождения
  * @property-read string $name Полное имя
  * @property-read string $first_name Имя
- * @property-read string $parentName Отчество
- * @property-read string $familyName Фамилия
+ * @property-read string $parent_name Отчество
+ * @property-read string $family_name Фамилия
  *
  * @property-read string $preferred_locale Предпочитаемый язык пользователя
  *
