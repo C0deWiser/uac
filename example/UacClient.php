@@ -52,7 +52,17 @@ class UacClient extends AbstractClient
 
     public function defaultScopes()
     {
-        return ['phone', 'email'];
+        return [
+            'phone',
+            'email',
+            'user_read',
+            'user_write',
+            'user_phone',
+            'user_password',
+            'user_address',
+            'user_cars',
+            'user_subscriptions'
+        ];
     }
 
     /**
