@@ -468,6 +468,21 @@ abstract class AbstractClient
     }
 
     /**
+     * Установить адрес вебхука (oauth-сервер будет уведомлять о событиях).
+     *
+     * @param $webhook
+     * @return $this
+     */
+    public function setWebhook($webhook)
+    {
+        $this->options['webhook_uri'] = $webhook;
+
+        $this->log("Set webhook_uri: {$webhook}");
+
+        return $this;
+    }
+
+    /**
      * Устанавливает значение аргумента `prompt`
      * @see https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
      * @param string $prompt
