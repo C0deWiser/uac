@@ -44,7 +44,4 @@ try {
     }
     echo "<pre>{$e->getResponseBody()}</pre>";
     die();
-} catch (Exception $e) {
-    echo "Error {$e->getCode()}: {$e->getMessage()}";
-    die();
 }

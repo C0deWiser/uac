@@ -12,8 +12,6 @@ $uac = UacClient::instance();
     <script src="/assets/js/oauth.js"></script>
 </head>
 <body>
-<p>whoami <a href="<?php echo $uac->provider->getServerUrl() . '/oauth/v1/whoami'?>"><?php echo $uac->provider->getServerUrl() . '/oauth/v1/whoami'?></a> </p>
-<iframe src="<?php echo $uac->provider->getServerUrl() . '/oauth/v1/whoami'?>" width="100%" height="250px"></iframe>
 <?php
 if ($uac->hasAccessToken()) {
     ?>

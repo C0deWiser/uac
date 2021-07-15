@@ -24,6 +24,7 @@ class UacClient extends AbstractClient
             getenv('REDIRECT_URI'),
             new Context()
         );
+        $connector->verify = false;
 
         self::$client = new static($connector);
         return self::$client;

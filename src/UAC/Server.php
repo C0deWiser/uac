@@ -25,6 +25,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 //        }
 //    }
 
+    protected function getAllowedClientOptions(array $options)
+    {
+        return ['timeout', 'proxy', 'verify'];
+    }
+
     /**
      * @inheritdoc
      * @throws IdentityProviderException

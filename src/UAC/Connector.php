@@ -56,6 +56,13 @@ class Connector
     public $cache;
 
     /**
+     * Verify server ssl.
+     *
+     * @var
+     */
+    public $verify = true;
+
+    /**
      * Connector constructor
      * @param string $urlServer Адрес сервера авторизации
      * @param string $clientId Идентификатор приложения
@@ -99,7 +106,8 @@ class Connector
             'urlAccessToken'          => $this->urlAccessToken,
             'urlResourceOwnerDetails' => $this->urlResourceOwnerDetails,
             'urlTokenIntrospection'   => $this->urlTokenIntrospection,
-            'scopeSeparator'          => ' '
+            'scopeSeparator'          => ' ',
+            'verify'                  => $this->verify,
         ];
     }
 
