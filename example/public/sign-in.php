@@ -15,7 +15,9 @@ $uac->setAuthorizationHint('Добро пожаловать');
 
 //$uac->setPrompt('none');
 
-$uac->setWebhook(getenv('WEBHOOK_URI'));
+if (getenv('WEBHOOK_URI')) {
+    $uac->setWebhook(getenv('WEBHOOK_URI') . '?time=' . time());
+}
 
 // Отправляем пользователя на сервер за авторизацией
 header('Location: ' . $uac->getAuthorizationUrl());

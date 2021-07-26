@@ -31,6 +31,11 @@ class ApiRequest
     {
         $this->provider = $provider;
         $this->cache = $cache;
+
+        foreach ($headers as $name => $header) {
+            $headers[strtolower($name)] = $header;
+        }
+
         $this->headers = $headers;
         $this->parameters = $parameters;
 
@@ -46,9 +51,9 @@ class ApiRequest
     {
         $token = null;
 
-        if (isset($this->headers['Authorization'])) {
-            if (strpos($this->headers['Authorization'], 'Bearer') === 0) {
-                $token = substr($this->headers['Authorization'], 7);
+        if (isset($this->headers['authorization'])) {
+            if (strpos($this->headers['authorization'], 'Bearer') === 0) {
+                $token = trim(substr($this->headers['authorization'], 7));
             }
         }
         if (!$token && isset($this->parameters['access_token'])) {
