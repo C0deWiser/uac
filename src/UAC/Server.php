@@ -15,6 +15,8 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 {
     protected $urlServer;
 
+    protected $urlLegacyServer;
+
     protected $urlTokenIntrospection;
 
 //    public function __construct(array $options = [], array $collaborators = [])
@@ -115,6 +117,10 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function getOnlineOfficeHtml(AccessToken $token, $locale, $logout_url = null, $tickets_endpoint = null)
     {
+        if (!$this->urlLegacyServer) {
+            throw new \Exception('Set up Connector::$urlLegacyServer first');
+        }
+
         $query = [
             'locale' => $locale,
         ];
@@ -125,7 +131,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
             $query['tickets_endpoint'] = $tickets_endpoint;
         }
 
-        $url = $this->urlServer . '/user-office/v1';
+        $url = $this->urlLegacyServer . '/user-office/v1';
         $request = $this->getRequest('POST', $url . '/get?' . http_build_query($query),
             [
                 'headers' => ['Authorization' => $token->getToken()]
@@ -141,7 +147,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function getOnlineOfficeCss($locale)
     {
-        $url = $this->urlServer . '/user-office/v1';
+        if (!$this->urlLegacyServer) {
+            throw new \Exception('Set up Connector::$urlLegacyServer first');
+        }
+
+        $url = $this->urlLegacyServer . '/user-office/v1';
         $request = $this->getRequest('GET', $url . '/get-css?locale=' . $locale);
         return $this->getParsedResponse($request);
     }
@@ -154,7 +164,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      */
     public function getOnlineOfficeJs($locale)
     {
-        $url = $this->urlServer . '/user-office/v1';
+        if (!$this->urlLegacyServer) {
+            throw new \Exception('Set up Connector::$urlLegacyServer first');
+        }
+
+        $url = $this->urlLegacyServer . '/user-office/v1';
         $request = $this->getRequest('GET', $url . '/get-js?locale=' . $locale);
         return $this->getParsedResponse($request);
     }

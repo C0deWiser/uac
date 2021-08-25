@@ -6,7 +6,7 @@ $uac->requireAuthorization($_SERVER['REQUEST_URI']);
 
 $office = $uac
     ->setLocale('en')
-    ->getOnlineOffice('http://localhost:8080/sign-out.php');
+    ->getOnlineOffice('http://uac.test:7888/sign-out.php');
 
 echo $office->assetHtml();
 echo $office->assetStyles();

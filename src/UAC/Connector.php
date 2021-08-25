@@ -43,6 +43,13 @@ class Connector
      */
     public $urlServer;
 
+    /**
+     * Адрес старого сервера авторизации (со старым л/к)
+     *
+     * @var string
+     */
+    public $urlLegacyServer;
+
     public $collaborators;
 
     /**
@@ -102,6 +109,7 @@ class Connector
             'clientSecret'            => $this->clientSecret,
             'redirectUri'             => $this->redirectUri,
             'urlServer'               => $this->urlServer,
+            'urlLegacyServer'         => $this->urlLegacyServer,
             'urlAuthorize'            => $this->urlAuthorize,
             'urlAccessToken'          => $this->urlAccessToken,
             'urlResourceOwnerDetails' => $this->urlResourceOwnerDetails,

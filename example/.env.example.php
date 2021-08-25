@@ -3,7 +3,8 @@
 return [
     'APP_DEBUG'=>false,
 
-    'OAUTH_SERVER_URL'=>'https://oauth.fc-zenit.ru',
+    'OAUTH_SERVER_URL'=>'https://new-oauth.fc-zenit.ru',
+    'OAUTH_LEGACY_SERVER_URL'=>'https://old-oauth.fc-zenit.ru',
 
     'CLIENT_ID'=>'',
     'CLIENT_SECRET'=>'',

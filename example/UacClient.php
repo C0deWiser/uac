@@ -25,6 +25,7 @@ class UacClient extends AbstractClient
             new Context()
         );
         $connector->verify = false;
+        $connector->urlLegacyServer = getenv('OAUTH_LEGACY_SERVER_URL');
 
         self::$client = new static($connector);
         return self::$client;

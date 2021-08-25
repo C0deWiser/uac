@@ -4,6 +4,7 @@ namespace Codewiser\UAC;
 
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
+use Codewiser\UAC\Model\UserOffice;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
@@ -537,5 +538,32 @@ abstract class AbstractClient
         $this->options['locale'] = $locale;
         $this->context->locale = $locale;
         return $this;
+    }
+
+    /**
+     * Возвращает личный кабинет авторизованного пользователя: html, стили и скрипты.
+     *
+     * Полученные данные нужно вставить на страницу с адресом /elk !!!
+     *
+     * Стили и скрипты встроить в подвал.
+     *
+     * Требуется подключенный jQuery ($)
+     *
+     * @param null|string $logout_url локальный роут для деавторизации пользователя
+     * @param null|string $tickets_endpoint полный адрес эндопоинта api билетов
+     * @return UserOffice
+     * @throws IdentityProviderException
+     */
+    public function getOnlineOffice($logout_url = null, $tickets_endpoint = null)
+    {
+        $html = $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url, $tickets_endpoint);
+
+        $this->log("getOnlineOffice", $html);
+
+        return new UserOffice(
+            $html,
+            $this->provider->getOnlineOfficeCss($this->locale),
+            $this->provider->getOnlineOfficeJs($this->locale)
+        );
     }
 }
