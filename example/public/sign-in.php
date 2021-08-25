@@ -11,7 +11,7 @@ $uac->setReturnPath($_SERVER['HTTP_REFERER']);
 
 $uac->setLocale('ru');
 
-$uac->setAuthorizationHint('Добро пожаловать');
+//$uac->setAuthorizationHint('Добро пожаловать');
 
 //$uac->setPrompt('none');
 
