@@ -558,8 +558,6 @@ abstract class AbstractClient
     {
         $html = $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url, $tickets_endpoint);
 
-        $this->log("getOnlineOffice", $html);
-
         return new UserOffice(
             $html,
             $this->provider->getOnlineOfficeCss($this->locale),
