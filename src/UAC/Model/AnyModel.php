@@ -47,7 +47,7 @@ abstract class AnyModel
                     return $array;
 
                 case strpos($properties, 'datetime') === 0:
-                    return Carbon::parse($value);
+                    return !is_null($value) ? Carbon::parse($value) : null;
 
                 default:
                     return new $properties($value);
