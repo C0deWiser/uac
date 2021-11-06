@@ -25,6 +25,7 @@ if ($uac->hasAccessToken()) {
 
     $user = $uac->getResourceOwner();
 
+    echo "<pre>birthday " . print_r($user->birthday, true) . "</pre>";
     echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
     echo "<pre>" . print_r($user->rules()->toArray(), true) . "</pre>";
 

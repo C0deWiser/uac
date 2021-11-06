@@ -12,6 +12,7 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 use Codewiser\UAC\Api\Facade;
 use Codewiser\UAC\Exception\OauthResponseException;
 use Codewiser\UAC\Model\ResourceOwner;
+use Psr\Log\LoggerInterface;
 
 /**
  * OAuth-клиент
@@ -39,11 +40,18 @@ abstract class AbstractClient
      */
     protected $locale = 'ru';
 
-    public function __construct(Connector $connector)
+    /**
+     * @var LoggerInterface|null
+     */
+    protected $logger;
+
+    public function __construct(Connector $connector, $logger = null)
     {
         $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
         $this->context = $connector->context;
         $this->cache = $connector->cache;
+        $this->logger = $logger;
+        $this->provider->setLogger($logger);
 
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {
@@ -74,7 +82,9 @@ abstract class AbstractClient
         $this->context->state = $this->provider->getState();
         $this->context->response_type = 'code';
 
-        $this->log('Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+        if ($this->logger) {
+            $this->logger->info('Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+        }
 
         return $url;
     }
@@ -90,7 +100,9 @@ abstract class AbstractClient
         $this->context->state = $this->provider->getState();
         $this->context->response_type = 'leave';
 
-        $this->log('Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+        if ($this->logger) {
+            $this->logger->info('Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+        }
 
         return $url;
     }
@@ -104,7 +116,9 @@ abstract class AbstractClient
     {
         $this->context->return_path = $returnPath;
 
-        $this->log("Set return_path: {$returnPath}");
+        if ($this->logger) {
+            $this->logger->debug("Set return_path: {$returnPath}");
+        }
 
         return $this;
     }
@@ -119,7 +133,9 @@ abstract class AbstractClient
     {
         $returnPath = $this->context->return_path ?: $finally;
 
-        $this->log("Got return_path: {$returnPath}");
+        if ($this->logger) {
+            $this->logger->debug("Got return_path: {$returnPath}");
+        }
 
         return $returnPath;
     }
@@ -134,53 +150,75 @@ abstract class AbstractClient
      */
     public function callbackController(array $request)
     {
-        $this->log('Callback', ['request' => $request]);
+        if ($this->logger) {
+            $this->logger->info('Callback', ['request' => $request]);
+        }
 
         if (isset($request['state'])) {
 
             if (!$this->context->restoreContext($request['state'])) {
                 // Подделка!
-                $this->log("State mismatch:", ['request' => $request]);
+                if ($this->logger) {
+                    $this->logger->warning("State mismatch:", ['request' => $request]);
+                }
                 exit('Invalid state');
             }
 
-            $this->log('Got context', $this->context->toArray());
+            if ($this->logger) {
+                $this->logger->debug('Got context', $this->context->toArray());
+            }
 
             if (isset($request['error'])) {
-                $this->log("Got error: {$request['error']}", [
-                    'description' => @$request['error_description'],
-                    'uri' => @$request['error_uri']
-                ]);
+                if ($this->logger) {
+                    $this->logger->error("Got error: {$request['error']}", [
+                        'description' => @$request['error_description'],
+                        'uri' => @$request['error_uri']
+                    ]);
+                }
                 throw new OauthResponseException($request['error'], @$request['error_description'], @$request['error_uri']);
             }
 
             if ($this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
-                $this->log("Has response_type: leave");
+                if ($this->logger) {
+                    $this->logger->debug("Has response_type: leave");
+                }
                 $this->unsetAccessToken();
                 $this->deauthorizeResourceOwner();
-                $this->log("User signed out");
+                if ($this->logger) {
+                    $this->logger->debug("User signed out");
+                }
 
             } elseif ($this->context->response_type == 'code' && isset($request['code'])) {
                 // Это авторизация по коду
 
-                $this->log("Has response_type: code");
+                if ($this->logger) {
+                    $this->logger->debug("Has response_type: code");
+                    $this->logger->debug("Got code: {$request['code']}");
+                }
 
-                $this->log("Got code: {$request['code']}");
                 $access_token = $this->grantAuthorizationCode($request['code']);
-                $this->log("Got token: {$access_token->getToken()}");
+                if ($this->logger) {
+                    $this->logger->debug("Got token: {$access_token->getToken()}");
+                }
 
                 $this->setAccessToken($access_token);
                 $resource = $this->provider->getResourceOwner($access_token);
-                $this->log("Got resource owner", $resource->toArray());
+                if ($this->logger) {
+                    $this->logger->debug("Got resource owner", $resource->toArray());
+                }
 
                 $this->authorizeResourceOwner($resource);
-                $this->log("User signed in");
+                if ($this->logger) {
+                    $this->logger->debug("User signed in");
+                }
 
             } else {
 
                 // Не должно нас тут быть...
-                $this->log("I dont know what to do:", ['request' => $request, 'context' => $this->context->toArray()]);
+                if ($this->logger) {
+                    $this->logger->warning("I dont know what to do:", ['request' => $request, 'context' => $this->context->toArray()]);
+                }
                 exit('Invalid request');
             }
         }
@@ -245,13 +283,14 @@ abstract class AbstractClient
     abstract protected function deauthorizeResourceOwner();
 
     /**
-     * Записать событие в лог
+     * Лог
      *
-     * @param $message
-     * @param array $context
-     * @return mixed
+     * @return LoggerInterface|null
      */
-    abstract public function log($message, array $context = []);
+    public function logger()
+    {
+        return $this->logger;
+    }
 
     /**
      * Список скоупов, которые по умолчанию будут запрашиваться у сервера во время авторизации
@@ -449,7 +488,8 @@ abstract class AbstractClient
     {
         $this->options['scope'] = $scope;
 
-        $this->log("Set scope: {$scope}");
+        if ($this->logger)
+            $this->logger->debug("Set scope: {$scope}");
 
         return $this;
     }
@@ -463,7 +503,8 @@ abstract class AbstractClient
     {
         $this->options['authorization_hint'] = $hint;
 
-        $this->log("Set authorization_hint: {$hint}");
+        if ($this->logger)
+            $this->logger->debug("Set authorization_hint: {$hint}");
 
         return $this;
     }
@@ -478,7 +519,8 @@ abstract class AbstractClient
     {
         $this->options['webhook_uri'] = $webhook;
 
-        $this->log("Set webhook_uri: {$webhook}");
+        if ($this->logger)
+            $this->logger->debug("Set webhook_uri: {$webhook}");
 
         return $this;
     }
@@ -493,7 +535,8 @@ abstract class AbstractClient
     {
         $this->options['prompt'] = $prompt;
 
-        $this->log("Set prompt: {$prompt}");
+        if ($this->logger)
+            $this->logger->debug("Set prompt: {$prompt}");
 
         return $this;
     }
@@ -507,7 +550,8 @@ abstract class AbstractClient
     {
         $this->context->run_in_popup = $runInPopup;
 
-        $this->log("Set run_in_popup: {$runInPopup}");
+        if ($this->logger)
+            $this->logger("Set run_in_popup: {$runInPopup}");
 
         return $this;
     }
@@ -521,7 +565,9 @@ abstract class AbstractClient
     public function closePopup()
     {
         if ($this->context->run_in_popup) {
-            $this->log("Closing popup");
+            if ($this->logger) {
+                $this->logger->debug("Closing popup");
+            }
             echo "<script>window.close();</script>";
             return true;
         } else {

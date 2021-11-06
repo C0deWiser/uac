@@ -6,6 +6,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 use Codewiser\UAC\Exception\IdentityProviderException;
 use Codewiser\UAC\Model\ResourceOwner;
+use Psr\Log\LoggerInterface;
 
 /**
  * OAuth сервис-провайдер
@@ -19,6 +20,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     protected $urlTokenIntrospection;
 
+    /**
+     * @var LoggerInterface|null
+     */
+    protected $logger;
+
 //    public function __construct(array $options = [], array $collaborators = [])
 //    {
 //        parent::__construct($options, $collaborators);
@@ -26,6 +32,13 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 //            $this->urlServer = $options['urlServer'];
 //        }
 //    }
+    /**
+     * @param LoggerInterface|null $logger
+     */
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+    }
 
     protected function getAllowedClientOptions(array $options)
     {
@@ -79,6 +92,46 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         }
 
         return parent::getAccessToken($grant, $options);
+    }
+
+    protected function createRequest($method, $url, $token, array $options)
+    {
+        $request = parent::createRequest($method, $url, $token, $options);
+
+        if ($this->logger) {
+            $this->logger->debug($request->getMethod() . ' ' . $request->getUri(), [
+                'headers' => $request->getHeaders(),
+                'body' => $request->getBody()
+            ]);
+        }
+
+        return $request;
+    }
+
+    public function getRequest($method, $url, array $options = [])
+    {
+        $request = parent::getRequest($method, $url, $options);
+
+        if ($this->logger) {
+            $this->logger->debug($request->getMethod() . ' ' . $request->getUri(), [
+                'headers' => $request->getHeaders(),
+                'body' => $request->getBody()
+            ]);
+        }
+
+        return $request;
+    }
+
+    protected function parseResponse(ResponseInterface $response)
+    {
+        if ($this->logger) {
+            $this->logger->debug($response->getStatusCode(), [
+                'headers' => $response->getHeaders(),
+                'body' => $response->getBody()
+            ]);
+        }
+
+        return parent::parseResponse($response);
     }
 
     /**

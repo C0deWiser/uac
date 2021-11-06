@@ -3,13 +3,13 @@ require 'config.php';
 
 $uac = UacClient::instance();
 
-$uac->log('webhook', (array)getallheaders() + (array)$_GET);
+$uac->logger()->debug('webhook', (array)getallheaders() + (array)$_GET);
 
 $request = $uac->apiRequest(getallheaders(), $_REQUEST);
 
 try {
     $request->validate();
-    $uac->log($request->token());
+    $uac->logger()->debug($request->token());
 } catch (\Codewiser\UAC\Exception\Api\RequestException $e) {
-    $uac->log($e->getMessage());
+    $uac->logger()->warning($e->getMessage());
 }

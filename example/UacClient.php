@@ -6,6 +6,7 @@ use Codewiser\UAC\AbstractClient;
 use Codewiser\UAC\Connector;
 use Codewiser\UAC\Logger;
 use Codewiser\UAC\Model\ResourceOwner;
+use Monolog\Handler\StreamHandler;
 
 class UacClient extends AbstractClient
 {
@@ -27,7 +28,10 @@ class UacClient extends AbstractClient
         $connector->verify = false;
         $connector->urlLegacyServer = getenv('OAUTH_LEGACY_SERVER_URL');
 
-        self::$client = new static($connector);
+        $log = new \Monolog\Logger('uac');
+        $log->pushHandler(new StreamHandler('logs/uac.log', \Monolog\Logger::DEBUG));
+        
+        self::$client = new static($connector, $log);
         return self::$client;
     }
 
@@ -47,17 +51,9 @@ class UacClient extends AbstractClient
         // Un-authorize local user
     }
 
-    public function log($message, array $context = [])
-    {
-        Logger::instance()->info($message, $context);
-    }
-
     public function defaultScopes()
     {
-        return null;
         return [
-            'phone',
-            'email',
             'user_read',
             'user_write',
             'user_phone',
