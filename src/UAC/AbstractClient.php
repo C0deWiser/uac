@@ -159,8 +159,9 @@ abstract class AbstractClient
             if (!$this->context->restoreContext($request['state'])) {
                 // Подделка!
                 if ($this->logger) {
-                    $this->logger->warning("State mismatch:", ['request' => $request]);
+                    $this->logger->warning("Invalid state:", ['request' => $request]);
                 }
+                header('Location: /?InvalidState');
                 exit('Invalid state');
             }
 
