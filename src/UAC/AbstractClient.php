@@ -52,6 +52,7 @@ abstract class AbstractClient
         $this->cache = $connector->cache;
         $this->logger = $logger;
         $this->provider->setLogger($logger);
+        $this->provider->setLocale($this->locale);
 
         if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
             try {
@@ -311,7 +312,8 @@ abstract class AbstractClient
     }
 
     /**
-     * Возвращает профиль авторизвованного пользователя
+     * Возвращает профиль авторизованного пользователя.
+     *
      * @return ResourceOwner|ResourceOwnerInterface
      */
     public function getResourceOwner()
@@ -584,6 +586,8 @@ abstract class AbstractClient
     {
         $this->options['locale'] = $locale;
         $this->context->locale = $locale;
+        $this->locale = $locale;
+        $this->provider->setLocale($this->locale);
         return $this;
     }
 

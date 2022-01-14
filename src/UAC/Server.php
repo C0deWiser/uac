@@ -20,6 +20,8 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     protected $urlTokenIntrospection;
 
+    protected $locale;
+
     /**
      * @var LoggerInterface|null
      */
@@ -38,6 +40,22 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     public function setLogger($logger)
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLocale()
+    {
+        return $this->locale;
+    }
+
+    /**
+     * @param string $locale
+     */
+    public function setLocale($locale)
+    {
+        $this->locale = $locale;
     }
 
     protected function getAllowedClientOptions(array $options)
@@ -278,5 +296,8 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return $response;
     }
 
-
+    public function getResourceOwnerDetailsUrl(AccessToken $token)
+    {
+        return parent::getResourceOwnerDetailsUrl($token) . '?locale=' . $this->locale;
+    }
 }

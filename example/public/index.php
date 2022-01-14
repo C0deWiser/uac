@@ -23,7 +23,7 @@ if ($uac->hasAccessToken()) {
     echo 'Access Token '.$uac->getAccessToken()->getToken().'<br>';
     echo "<pre>" . print_r($uac->introspectToken($uac->getAccessToken())->toArray(), true) . "</pre>";
 
-    $user = $uac->getResourceOwner();
+    $user = $uac->setLocale('en')->getResourceOwner();
 
     echo "<pre>birthday " . print_r($user->birthday, true) . "</pre>";
     echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
