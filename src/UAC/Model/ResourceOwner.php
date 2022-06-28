@@ -19,25 +19,28 @@ use League\OAuth2\Client\Provider\ResourceOwnerInterface;
  *
  * @property-read Carbon $created_at Дата регистрации пользователя
  * @property-read Carbon $updated_at Дата последнего изменения профиля пользователя
- * @property-read Carbon|null $authorized_at Дата последней авторизации пользователя
+ * @property-read null|Carbon $authorized_at Дата последней авторизации пользователя
+ * @property-read null|boolean $has_zenit_pass Профиль полностью заполнен (т.н. «паспорт болельщика»)
  *
- * @property-read Carbon|null $birthday День рождения
- * @property-read string|null $name Полное имя
- * @property-read string|null $first_name Имя
- * @property-read string|null $parent_name Отчество
- * @property-read string|null $family_name Фамилия
+ * @property-read null|Carbon $birthday День рождения
+ * @property-read null|string $name Полное имя
+ * @property-read null|string $first_name Имя
+ * @property-read null|string $parent_name Отчество
+ * @property-read null|string $family_name Фамилия
+ * @property-read null|string $picture Фотография
  *
- * @property-read string|null $preferred_locale Предпочитаемый язык пользователя
+ * @property-read null|string $preferred_locale Предпочитаемый язык пользователя
  * @property-read boolean $terms_accepted Согласие с правилами предоставления услуг
- * @property-read string|null $card Номер карты лояльности
+ * @property-read null|string $card Номер карты лояльности
  *
- * @property-read string|null $email Адрес почты пользователя
- * @property-read string|null $phone Телефон пользователя
+ * @property-read null|string $email Адрес почты пользователя
+ * @property-read null|string $phone Телефон пользователя
  *
- * @property-read array|Address[] $addresses Адреса пользователя
- * @property-read array|Car[] $cars Автомобили пользователя
+ * @property-read array<DiscountCard> $cards Информация о скидочных картах.
+ * @property-read array<Address> $addresses Адреса пользователя
+ * @property-read array<Car> $cars Автомобили пользователя
  * @property-read Notifications $notifications Разрешения на уведомления
- * @property-read array|Subscription[] $subscriptions Подписки пользователя
+ * @property-read array<Subscription> $subscriptions Подписки пользователя
  */
 class ResourceOwner extends AnyModel implements ResourceOwnerInterface
 {
@@ -47,6 +50,7 @@ class ResourceOwner extends AnyModel implements ResourceOwnerInterface
         'authorized_at' => 'datetime',
         'birthday' => 'datetime:Y-m-d',
 
+        'cards' => [DiscountCard::class],
         'addresses' => [Address::class],
         'cars' => [Car::class],
         'subscriptions' => [Subscription::class],

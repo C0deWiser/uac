@@ -25,7 +25,9 @@ if ($uac->hasAccessToken()) {
 
     $user = $uac->setLocale('en')->getResourceOwner();
 
-    echo "<pre>birthday " . print_r($user->birthday, true) . "</pre>";
+    if ($user->picture) {
+        echo "<img src='{$user->picture}' alt='' width='128'>";
+    }
     echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
     echo "<pre>" . print_r($user->rules()->toArray(), true) . "</pre>";
 
