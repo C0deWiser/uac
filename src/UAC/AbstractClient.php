@@ -84,7 +84,7 @@ abstract class AbstractClient
         $this->context->response_type = 'code';
 
         if ($this->logger) {
-            $this->logger->info('Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+            $this->logger->info('UAC Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
         }
 
         return $url;
@@ -102,7 +102,7 @@ abstract class AbstractClient
         $this->context->response_type = 'leave';
 
         if ($this->logger) {
-            $this->logger->info('Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
+            $this->logger->info('UAC Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
         }
 
         return $url;
@@ -118,7 +118,7 @@ abstract class AbstractClient
         $this->context->return_path = $returnPath;
 
         if ($this->logger) {
-            $this->logger->debug("Set return_path: {$returnPath}");
+            $this->logger->debug("UAC Set return_path: {$returnPath}");
         }
 
         return $this;
@@ -135,7 +135,7 @@ abstract class AbstractClient
         $returnPath = $this->context->return_path ?: $finally;
 
         if ($this->logger) {
-            $this->logger->debug("Got return_path: {$returnPath}");
+            $this->logger->debug("UAC Got return_path: {$returnPath}");
         }
 
         return $returnPath;
@@ -152,7 +152,7 @@ abstract class AbstractClient
     public function callbackController(array $request)
     {
         if ($this->logger) {
-            $this->logger->info('Callback', ['request' => $request]);
+            $this->logger->info('UAC Callback', ['request' => $request]);
         }
 
         if (isset($request['state'])) {
@@ -160,19 +160,19 @@ abstract class AbstractClient
             if (!$this->context->restoreContext($request['state'])) {
                 // Подделка!
                 if ($this->logger) {
-                    $this->logger->warning("Invalid state:", ['request' => $request]);
+                    $this->logger->warning("UAC Invalid state:", ['request' => $request]);
                 }
                 header('Location: /?InvalidState');
                 exit('Invalid state');
             }
 
             if ($this->logger) {
-                $this->logger->debug('Got context', $this->context->toArray());
+                $this->logger->debug('UAC Got context', $this->context->toArray());
             }
 
             if (isset($request['error'])) {
                 if ($this->logger) {
-                    $this->logger->error("Got error: {$request['error']}", [
+                    $this->logger->error("UAC Got error: {$request['error']}", [
                         'description' => @$request['error_description'],
                         'uri' => @$request['error_uri']
                     ]);
@@ -183,43 +183,43 @@ abstract class AbstractClient
             if ($this->context->response_type == 'leave') {
                 // Ходили деавторизовываться на сервер, разавторизуемся и тут
                 if ($this->logger) {
-                    $this->logger->debug("Has response_type: leave");
+                    $this->logger->debug("UAC Has response_type: leave");
                 }
                 $this->unsetAccessToken();
                 $this->deauthorizeResourceOwner();
                 if ($this->logger) {
-                    $this->logger->debug("User signed out");
+                    $this->logger->debug("UAC User signed out");
                 }
 
             } elseif ($this->context->response_type == 'code' && isset($request['code'])) {
                 // Это авторизация по коду
 
                 if ($this->logger) {
-                    $this->logger->debug("Has response_type: code");
-                    $this->logger->debug("Got code: {$request['code']}");
+                    $this->logger->debug("UAC Has response_type: code");
+                    $this->logger->debug("UAC Got code: {$request['code']}");
                 }
 
                 $access_token = $this->grantAuthorizationCode($request['code']);
                 if ($this->logger) {
-                    $this->logger->debug("Got token: {$access_token->getToken()}");
+                    $this->logger->debug("UAC Got token: {$access_token->getToken()}");
                 }
 
                 $this->setAccessToken($access_token);
                 $resource = $this->provider->getResourceOwner($access_token);
                 if ($this->logger) {
-                    $this->logger->debug("Got resource owner", $resource->toArray());
+                    $this->logger->debug("UAC Got resource owner", $resource->toArray());
                 }
 
                 $this->authorizeResourceOwner($resource);
                 if ($this->logger) {
-                    $this->logger->debug("User signed in");
+                    $this->logger->debug("UAC User signed in");
                 }
 
             } else {
 
                 // Не должно нас тут быть...
                 if ($this->logger) {
-                    $this->logger->warning("I dont know what to do:", ['request' => $request, 'context' => $this->context->toArray()]);
+                    $this->logger->warning("UAC I dont know what to do:", ['request' => $request, 'context' => $this->context->toArray()]);
                 }
                 exit('Invalid request');
             }
