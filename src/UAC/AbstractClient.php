@@ -34,6 +34,8 @@ abstract class AbstractClient
 
     protected $options = [];
 
+    protected $make_redirect_when_invalid_state = true;
+
     /**
      * Языковая версия (для вещей, где это имеет значение
      * @var string
@@ -162,7 +164,9 @@ abstract class AbstractClient
                 if ($this->logger) {
                     $this->logger->warning("UAC Invalid state:", ['request' => $request]);
                 }
-                header('Location: /?InvalidState');
+                if ($this->make_redirect_when_invalid_state) {
+                    header('Location: /?InvalidState');
+                }
                 exit('Invalid state');
             }
 
@@ -614,5 +618,13 @@ abstract class AbstractClient
             $this->provider->getOnlineOfficeCss($this->locale),
             $this->provider->getOnlineOfficeJs($this->locale)
         );
+    }
+
+    /**
+     * @param bool $make_redirect_when_invalid_state
+     */
+    public function setMakeRedirectWhenInvalidState(bool $make_redirect_when_invalid_state)
+    {
+        $this->make_redirect_when_invalid_state = $make_redirect_when_invalid_state;
     }
 }

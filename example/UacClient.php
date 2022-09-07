@@ -28,6 +28,10 @@ class UacClient extends AbstractClient
         $log->pushHandler(new StreamHandler('logs/uac.log', \Monolog\Logger::DEBUG));
         
         self::$client = new static($connector, $log);
+
+        if (getenv('DISABLE_INVALID_STATE')) {
+            self::$client->setMakeRedirectWhenInvalidState(false);
+        }
         return self::$client;
     }
 
