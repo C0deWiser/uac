@@ -1,11 +1,7 @@
 <?php
 
-use League\OAuth2\Client\Provider\ResourceOwnerInterface;
-use League\OAuth2\Client\Token\AccessTokenInterface;
 use Codewiser\UAC\AbstractClient;
 use Codewiser\UAC\Connector;
-use Codewiser\UAC\Logger;
-use Codewiser\UAC\Model\ResourceOwner;
 use Monolog\Handler\StreamHandler;
 
 class UacClient extends AbstractClient
@@ -60,7 +56,7 @@ class UacClient extends AbstractClient
             'user_password',
             'user_address',
             'user_cars',
-            'user_subscriptions'
+            'mobile'
         ];
     }
 

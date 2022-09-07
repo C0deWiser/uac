@@ -117,7 +117,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         $request = parent::createRequest($method, $url, $token, $options);
 
         if ($this->logger) {
-            $this->logger->debug($request->getMethod() . ' ' . $request->getUri(), [
+            $this->logger->debug('UAC create request ' . $request->getMethod() . ' ' . $request->getUri(), [
                 'headers' => $request->getHeaders(),
                 'body' => $request->getBody()
             ]);
@@ -131,7 +131,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         $request = parent::getRequest($method, $url, $options);
 
         if ($this->logger) {
-            $this->logger->debug($request->getMethod() . ' ' . $request->getUri(), [
+            $this->logger->debug('UAC get request ' . $request->getMethod() . ' ' . $request->getUri(), [
                 'headers' => $request->getHeaders(),
                 'body' => $request->getBody()
             ]);
@@ -143,7 +143,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     protected function parseResponse(ResponseInterface $response)
     {
         if ($this->logger) {
-            $this->logger->debug($response->getStatusCode(), [
+            $this->logger->debug('UAC response ' . $response->getStatusCode(), [
                 'headers' => $response->getHeaders(),
                 'body' => $response->getBody()
             ]);

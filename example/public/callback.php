@@ -6,8 +6,6 @@
  * Time: 12:51
  */
 
-use Codewiser\UAC\Logger;
-
 require 'config.php';
 
 $uac = UacClient::instance();
