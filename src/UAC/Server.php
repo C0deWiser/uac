@@ -14,18 +14,15 @@ use Psr\Log\LoggerInterface;
  */
 class Server extends \League\OAuth2\Client\Provider\GenericProvider
 {
-    protected $urlServer;
+    protected string $urlServer;
 
-    protected $urlLegacyServer;
+    protected ?string $urlLegacyServer = null;
 
-    protected $urlTokenIntrospection;
+    protected string $urlTokenIntrospection;
 
-    protected $locale;
+    protected string $locale = 'ru';
 
-    /**
-     * @var LoggerInterface|null
-     */
-    protected $logger;
+    protected ?LoggerInterface $logger;
 
 //    public function __construct(array $options = [], array $collaborators = [])
 //    {
@@ -53,7 +50,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     /**
      * @param string $locale
      */
-    public function setLocale($locale)
+    public function setLocale(string $locale)
     {
         $this->locale = $locale;
     }

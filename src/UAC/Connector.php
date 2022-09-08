@@ -43,7 +43,7 @@ class Connector
     /**
      * Адрес старого сервера авторизации (со старым л/к).
      */
-    public string $urlLegacyServer;
+    public ?string $urlLegacyServer = null;
 
     /**
      * Collaborators passes directly to the Server object.
