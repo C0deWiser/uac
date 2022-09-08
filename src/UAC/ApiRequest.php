@@ -4,6 +4,7 @@
 namespace Codewiser\UAC;
 
 
+use Codewiser\UAC\Contracts\CacheContract;
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
 use Codewiser\UAC\Exception\IdentityProviderException;
@@ -13,11 +14,11 @@ use League\OAuth2\Client\Token\AccessToken;
 
 class ApiRequest
 {
-    protected $provider;
-    protected $cache;
-    protected $headers;
-    protected $parameters;
-    protected $token;
+    protected Server $provider;
+    protected ?CacheContract $cache;
+    protected array $headers;
+    protected array $parameters;
+    protected ?string $token;
 
     /**
      * ApiRequest constructor.
@@ -25,9 +26,9 @@ class ApiRequest
      * @param Server $provider
      * @param array $headers
      * @param array $parameters
-     * @param AbstractCache|null $cache
+     * @param CacheContract|null $cache
      */
-    public function __construct(Server $provider, array $headers, array $parameters, $cache = null)
+    public function __construct(Server $provider, array $headers, array $parameters, CacheContract $cache = null)
     {
         $this->provider = $provider;
         $this->cache = $cache;
@@ -44,10 +45,8 @@ class ApiRequest
 
     /**
      * Достает токен из запроса.
-     *
-     * @return string
      */
-    protected function extractToken()
+    protected function extractToken(): ?string
     {
         $token = null;
 
@@ -93,11 +92,11 @@ class ApiRequest
     /**
      * Возвращает состояние токена.
      *
-     * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
+     * @see https://pass.fc-zenit.ru/docs/oauth/token-introspection-endpoint.html
      * @return TokenIntrospection
      * @throws RequestException
      */
-    public function introspect()
+    public function introspect(): TokenIntrospection
     {
         $this->validate();
 
@@ -117,7 +116,7 @@ class ApiRequest
 
         if ($cache) {
             $timeout = 60 * 60 * 24; // 1 день
-            $cache->put($key, $introspected, $timeout);
+            $cache->set($key, $introspected, $timeout);
         }
 
         return $introspected;
@@ -129,7 +128,7 @@ class ApiRequest
      * @return ResourceOwner|ResourceOwnerInterface
      * @throws RequestException
      */
-    public function user()
+    public function user(): ?ResourceOwnerInterface
     {
         $this->validate();
 
@@ -149,7 +148,7 @@ class ApiRequest
 
         if ($cache) {
             $timeout = 60 * 60 * 24; // 1 день
-            $cache->put($key, $user, $timeout);
+            $cache->set($key, $user, $timeout);
         }
 
         return $user;
@@ -157,20 +156,18 @@ class ApiRequest
 
     /**
      * Возвращает токен из запроса.
-     *
-     * @return string
      */
-    public function token()
+    public function token(): ?string
     {
         return $this->token;
     }
 
     /**
-     * Формирует заголовки ответа на запрос к API с ошибкой
+     * Формирует и отправляет заголовки ответа на запрос к API с ошибкой
      *
      * @param \Exception $e
      */
-    public function respondWithError($e)
+    public function respondWithError(\Exception $e)
     {
         $httpCode = $e instanceof RequestException ? $e->getHttpCode() : $e->getCode();
 

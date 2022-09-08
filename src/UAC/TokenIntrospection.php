@@ -7,7 +7,7 @@ namespace Codewiser\UAC;
 /**
  * Class TokenIntrospection
  * @package Codewiser\UAC
- * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
+ * @see https://pass.fc-zenit.ru/docs/oauth/token-introspection-endpoint.html
  */
 class TokenIntrospection
 {
@@ -30,7 +30,7 @@ class TokenIntrospection
     protected $iat;
 
     /** @var array */
-    protected $data;
+    protected array $data;
 
     public function __construct($data)
     {
@@ -48,9 +48,8 @@ class TokenIntrospection
 
     /**
      * Этот токен активен?
-     * @return bool
      */
-    public function isActive()
+    public function isActive(): bool
     {
         return $this->active;
     }
@@ -58,69 +57,50 @@ class TokenIntrospection
     /**
      * Этот токен активен?
      * @deprecated
-     * @return boolean
      */
-    public function getActive()
+    public function getActive(): bool
     {
         return $this->active;
     }
 
     /**
      * Открывает ли токен доступ к данному scope?
-     * @param $scope
-     * @return bool
      */
-    public function hasScope($scope)
+    public function hasScope(string $scope): bool
     {
         $scopes = explode(' ', $this->getScope());
         return in_array($scope, $scopes);
     }
 
     /**
-     * К каким scope открывает доступ этот токен
-     * @return string|null
+     * К каким scope открывает доступ этот токен.
      */
-    public function getScope()
+    public function getScope(): ?string
     {
         return $this->scope;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getClientId()
+    public function getClientId(): ?string
     {
         return $this->clientId;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getUserName()
+    public function getUserName(): ?string
     {
         return $this->userName;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getExp()
+    public function getExp(): ?int
     {
         return $this->exp;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getIat()
+    public function getIat(): ?int
     {
         return $this->iat;
     }
 
-    /**
-     * @return array
-     */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->data;
     }

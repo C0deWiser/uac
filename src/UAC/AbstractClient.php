@@ -2,6 +2,7 @@
 
 namespace Codewiser\UAC;
 
+use Codewiser\UAC\Contracts\CacheContract;
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
 use Codewiser\UAC\Model\UserOffice;
@@ -18,39 +19,32 @@ use Psr\Log\LoggerInterface;
  * OAuth-клиент
  * @package UAC
  *
- * @property Facade api Доступ к серверному API
- * @property Server provider
+ * @property-read Facade api Доступ к серверному API
+ * @property-read Server provider
  */
 abstract class AbstractClient
 {
-    /** @var Server */
-    protected $provider;
+    protected Server $provider;
 
-    /** @var AbstractContext */
-    protected $context;
+    protected ContextManager $context;
 
-    /** @var AbstractCache|null */
-    protected $cache;
+    protected ?CacheContract $cache;
 
-    protected $options = [];
+    protected array $options = [];
 
-    protected $make_redirect_when_invalid_state = true;
+    protected bool $make_redirect_when_invalid_state = true;
 
     /**
-     * Языковая версия (для вещей, где это имеет значение
-     * @var string
+     * Языковая версия (для вещей, где это имеет значение).
      */
-    protected $locale = 'ru';
+    protected string $locale = 'ru';
 
-    /**
-     * @var LoggerInterface|null
-     */
-    protected $logger;
+    protected ?LoggerInterface $logger;
 
-    public function __construct(Connector $connector, $logger = null)
+    public function __construct(Connector $connector, LoggerInterface $logger = null)
     {
-        $this->provider = new Server($connector->toArray(), (array)$connector->collaborators);
-        $this->context = $connector->context;
+        $this->provider = new Server($connector->toArray(), $connector->collaborators);
+        $this->context = $connector->contextManager;
         $this->cache = $connector->cache;
         $this->logger = $logger;
         $this->provider->setLogger($logger);
@@ -67,17 +61,16 @@ abstract class AbstractClient
     }
 
     /**
-     * Формирует адрес авторизации, запоминает контекст, возвращает url
-     * @return string
+     * Формирует адрес авторизации, запоминает контекст, возвращает url.
      */
-    public function getAuthorizationUrl()
+    public function getAuthorizationUrl(): string
     {
         $options = array_merge(
             [
                 'scope' => $this->defaultScopes(),
                 'authorization_hint' => $this->defaultAuthorizationHint()
             ],
-            (array)$this->options
+            $this->options
         );
 
         $url = $this->provider->getAuthorizationUrl($options);
@@ -93,10 +86,9 @@ abstract class AbstractClient
     }
 
     /**
-     * Формирует адрес деавторизации, запоминает контекст, возвращает url
-     * @return string
+     * Формирует адрес деавторизации, запоминает контекст, возвращает url.
      */
-    public function getDeauthorizationUrl()
+    public function getDeauthorizationUrl(): string
     {
         $url = $this->provider->getDeauthorizationUrl();
 
@@ -111,11 +103,9 @@ abstract class AbstractClient
     }
 
     /**
-     * Запоминает в сессионном хранилище адрес страницы, куда нужно будет вернуть пользователя после завершения oauth-процесса
-     * @param string $returnPath
-     * @return AbstractClient
+     * Запоминает в сессионном хранилище адрес страницы, куда нужно будет вернуть пользователя после завершения oauth-процесса.
      */
-    public function setReturnPath($returnPath)
+    public function setReturnPath(string $returnPath): self
     {
         $this->context->return_path = $returnPath;
 
@@ -127,12 +117,12 @@ abstract class AbstractClient
     }
 
     /**
-     * Возвращает адрес страницы, куда нужно вернуть пользователя после oauth-процесса
+     * Возвращает адрес страницы, куда нужно вернуть пользователя после oauth-процесса.
      *
-     * @param string $finally альтернативный адрес возврата (если в истории ничего нет)
+     * @param string $finally Альтернативный адрес возврата (если в истории ничего нет)
      * @return string
      */
-    public function getReturnPath($finally)
+    public function getReturnPath(string $finally): string
     {
         $returnPath = $this->context->return_path ?: $finally;
 
@@ -231,21 +221,19 @@ abstract class AbstractClient
     }
 
     /**
-     * Должен сохранить токен в сессионном хранилище
-     * @param AccessToken|AccessTokenInterface $accessToken
+     * Должен сохранить токен в сессионном хранилище.
      */
     protected function setAccessToken(AccessTokenInterface $accessToken)
     {
-        $this->context->access_token = serialize($accessToken);
+        $this->context->access_token = $accessToken;
     }
 
     /**
-     * Должен достать токен из сессионного хранилища
-     * @return AccessToken|AccessTokenInterface|null $accessToken
+     * Должен достать токен из сессионного хранилища.
      */
-    public function getAccessToken()
+    public function getAccessToken(): ?AccessTokenInterface
     {
-        $accessToken = isset($this->context->access_token) ? unserialize($this->context->access_token) : null;
+        $accessToken = $this->context->access_token ?? null;
 
         if ($accessToken && (!is_object($accessToken) || !($accessToken instanceof AccessTokenInterface))) {
             $accessToken = null;
@@ -255,8 +243,7 @@ abstract class AbstractClient
     }
 
     /**
-     * Должен удалить токен из сессионного хранилища
-     * @return void
+     * Должен удалить токен из сессионного хранилища.
      */
     public function unsetAccessToken()
     {
@@ -266,10 +253,9 @@ abstract class AbstractClient
     }
 
     /**
-     * Проверяет, получен ли токен доступа
-     * @return bool
+     * Проверяет, получен ли токен доступа.
      */
-    public function hasAccessToken()
+    public function hasAccessToken(): bool
     {
         return !!$this->getAccessToken();
     }
@@ -284,16 +270,11 @@ abstract class AbstractClient
     abstract protected function authorizeResourceOwner($user);
 
     /**
-     * Должен локально разавторизовать пользователя
+     * Должен локально разавторизовать пользователя.
      */
     abstract protected function deauthorizeResourceOwner();
 
-    /**
-     * Лог
-     *
-     * @return LoggerInterface|null
-     */
-    public function logger()
+    public function logger(): ?LoggerInterface
     {
         return $this->logger;
     }
@@ -306,33 +287,30 @@ abstract class AbstractClient
     abstract public function defaultScopes();
 
     /**
-     * Заголовок, который будет показан пользователю во время процесса авторизации
-     *
-     * @return string|null
+     * Заголовок, который будет показан пользователю во время процесса авторизации.
      */
-    public function defaultAuthorizationHint()
+    public function defaultAuthorizationHint(): ?string
     {
         return null;
     }
 
     /**
      * Возвращает профиль авторизованного пользователя.
-     *
-     * @return ResourceOwner|ResourceOwnerInterface
      */
-    public function getResourceOwner()
+    public function getResourceOwner(): ResourceOwnerInterface
     {
         return $this->provider->getResourceOwner($this->getAccessToken());
     }
 
     /**
-     * Разменивает код авторизации на токен доступа
+     * Разменивает код авторизации на токен доступа.
      *
-     * @param string $code код авторизации
+     * @see https://pass.fc-zenit.ru/docs/oauth/access-tokens.html#выпуск-токена-доступа-по-коду-авторизации
+     * @param string $code Код авторизации
      * @return AccessToken|AccessTokenInterface токен доступа
      * @throws IdentityProviderException
      */
-    public function grantAuthorizationCode($code)
+    public function grantAuthorizationCode(string $code): AccessTokenInterface
     {
         return $this->provider->getAccessToken('authorization_code', [
             'code' => $code
@@ -340,13 +318,14 @@ abstract class AbstractClient
     }
 
     /**
-     * Возобновляет токен доступа
+     * Возобновляет токен доступа.
      *
-     * @param AccessToken $access_token старый токен
-     * @return AccessToken|AccessTokenInterface новый токен
+     * @see https://pass.fc-zenit.ru/docs/oauth/access-tokens.html#перевыпуск-токена-доступа
+     * @param AccessToken|AccessTokenInterface $access_token Старый токен
+     * @return AccessToken|AccessTokenInterface Новый токен
      * @throws IdentityProviderException
      */
-    public function grantRefreshToken($access_token)
+    public function grantRefreshToken(AccessTokenInterface $access_token): AccessTokenInterface
     {
         return $this->provider->getAccessToken('refresh_token', [
             'refresh_token' => $access_token->getRefreshToken()
@@ -354,15 +333,16 @@ abstract class AbstractClient
     }
 
     /**
-     * Получает токен доступа по логину и паролю
+     * Получает токен доступа по логину и паролю.
      *
+     * @see https://pass.fc-zenit.ru/docs/oauth/access-tokens.html#выпуск-токена-доступа-по-паролю
      * @param string $username логин
      * @param string $password пароль
      * @param string|array|null $scope
      * @return AccessToken|AccessTokenInterface токен доступа
      * @throws IdentityProviderException
      */
-    public function grantPassword($username, $password, $scope = null)
+    public function grantPassword(string $username, string $password, $scope = null): AccessTokenInterface
     {
         $options = [
             'username' => $username,
@@ -375,11 +355,12 @@ abstract class AbstractClient
     /**
      * Получает токен доступа для приложения. Полученный токен доступа вы должны сохранить где-нибудь в базе данных на веки вечные, и не забывать возобновлять его по необходимости.
      *
+     * @see https://pass.fc-zenit.ru/docs/oauth/access-tokens.html#выпуск-токена-доступа-для-клиента
      * @param string|array|null $scope
      * @return AccessToken|AccessTokenInterface токен доступа
      * @throws IdentityProviderException
      */
-    public function grantClientCredentials($scope = null)
+    public function grantClientCredentials($scope = null): AccessTokenInterface
     {
         $options = [];
         $options['scope'] = $scope;
@@ -387,40 +368,42 @@ abstract class AbstractClient
     }
 
     /**
-     * Проверяет состояние токена
+     * Проверяет состояние токена.
      *
-     * @see http://oauth.fc-zenit.ru/doc/oauth/token-introspection-endpoint/
-     * @param AccessToken $access_token
+     * @see https://pass.fc-zenit.ru/docs/oauth/token-introspection-endpoint.html
+     * @param AccessToken|AccessTokenInterface $access_token
      * @return TokenIntrospection
+     * @throws IdentityProviderException
      */
-    public function introspectToken($access_token)
+    public function introspectToken(AccessTokenInterface $access_token): TokenIntrospection
     {
         return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
     }
 
     /**
-     * Входящий запрос к API
+     * Входящий запрос к API.
      *
-     * @param array $headers заголовки запроса (в них может быть Bearer токен)
-     * @param array $parameters параметры запроса (в них может быть access_token)
+     * @param array $headers Заголовки запроса (в них может быть Bearer токен)
+     * @param array $parameters Параметры запроса (в них может быть access_token)
      * @return ApiRequest
      */
-    public function apiRequest($headers, $parameters)
+    public function apiRequest(array $headers, array $parameters): ApiRequest
     {
         return new ApiRequest($this->provider, $headers, $parameters, $this->cache);
     }
 
     /**
-     * Авторизует поступивший запрос к API
+     * Авторизует поступивший запрос к API.
      *
-     * @see http://oauth.fc-zenit.ru/doc/api/fundamentals/request-validation/
-     * @param array $headers заголовки запроса (в них может быть Bearer токен)
-     * @param array $parameters параметры запроса (в них может быть access_token)
+     * @see https://pass.fc-zenit.ru/docs/api/fundamentals.html
+     * @param array $headers Заголовки запроса (в них может быть Bearer токен)
+     * @param array $parameters Параметры запроса (в них может быть access_token)
      * @return TokenIntrospection
      * @throws RequestException
+     * @throws IdentityProviderException
      * @deprecated use apiRequest()
      */
-    public function apiRequestAuthorize($headers, $parameters)
+    public function apiRequestAuthorize(array $headers, array $parameters): TokenIntrospection
     {
         $token = null;
         if (isset($headers['Authorization'])) {
@@ -449,7 +432,7 @@ abstract class AbstractClient
      * @param RequestException $e
      * @deprecated use apiRequest()
      */
-    public function apiRespondWithError($e)
+    public function apiRespondWithError(RequestException $e)
     {
         header($_SERVER["SERVER_PROTOCOL"] . " " . $e->getHttpCode());
 
@@ -487,31 +470,33 @@ abstract class AbstractClient
     }
 
     /**
-     * Установить список scope для следующего процесса авторизации
+     * Установить список scope для следующего процесса авторизации.
+     *
      * @param string|array $scope
      * @return static
      */
-    public function setScope($scope)
+    public function setScope($scope): self
     {
         $this->options['scope'] = $scope;
 
         if ($this->logger)
-            $this->logger->debug("Set scope: {$scope}");
+            $this->logger->debug("UAC set scope: {$scope}");
 
         return $this;
     }
 
     /**
-     * Установить заголовок процесса авторизации
-     * @param string $hint
+     * Установить заголовок процесса авторизации.
+     *
+     * @param string|null $hint
      * @return static
      */
-    public function setAuthorizationHint($hint)
+    public function setAuthorizationHint(?string $hint): self
     {
         $this->options['authorization_hint'] = $hint;
 
         if ($this->logger)
-            $this->logger->debug("Set authorization_hint: {$hint}");
+            $this->logger->debug("UAC set authorization_hint: {$hint}");
 
         return $this;
     }
@@ -519,46 +504,48 @@ abstract class AbstractClient
     /**
      * Установить адрес вебхука (oauth-сервер будет уведомлять о событиях).
      *
-     * @param $webhook
+     * @param string|null $webhook
      * @return $this
      */
-    public function setWebhook($webhook)
+    public function setWebhook(?string $webhook): self
     {
         $this->options['webhook_uri'] = $webhook;
 
         if ($this->logger)
-            $this->logger->debug("Set webhook_uri: {$webhook}");
+            $this->logger->debug("UAC set webhook_uri: {$webhook}");
 
         return $this;
     }
 
     /**
-     * Устанавливает значение аргумента `prompt`
+     * Устанавливает значение аргумента `prompt`.
+     *
      * @see https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-     * @param string $prompt
+     * @param string|null $prompt
      * @return static
      */
-    public function setPrompt($prompt)
+    public function setPrompt(?string $prompt): self
     {
         $this->options['prompt'] = $prompt;
 
         if ($this->logger)
-            $this->logger->debug("Set prompt: {$prompt}");
+            $this->logger->debug("UAC set prompt: {$prompt}");
 
         return $this;
     }
 
     /**
-     * Запоминает в сессионном хранилище, что oauth-процесс запущен в popup-окне
+     * Запоминает в сессионном хранилище, что oauth-процесс запущен в popup-окне.
+     *
      * @param bool $runInPopup
      * @return static
      */
-    public function setRunInPopup($runInPopup)
+    public function setRunInPopup(bool $runInPopup): self
     {
         $this->context->run_in_popup = $runInPopup;
 
         if ($this->logger)
-            $this->logger("Set run_in_popup: {$runInPopup}");
+            $this->logger()->debug("UAC set run_in_popup: {$runInPopup}");
 
         return $this;
     }
@@ -566,14 +553,14 @@ abstract class AbstractClient
     /**
      * Закрывает popup-окно, если oauth-процесс шёл в нём. Очищает после себя сессионное хранилище.
      *
-     * @return bool если возвращает false, то нужно сделать перенаправление на адрес returnPath
+     * @return bool Если возвращает false, то нужно сделать перенаправление на адрес returnPath
      * @see self::getReturnPath()
      */
-    public function closePopup()
+    public function closePopup(): bool
     {
         if ($this->context->run_in_popup) {
             if ($this->logger) {
-                $this->logger->debug("Closing popup");
+                $this->logger->debug("UAC closing popup");
             }
             echo "<script>window.close();</script>";
             return true;
@@ -586,7 +573,7 @@ abstract class AbstractClient
      * @param string $locale
      * @return static
      */
-    public function setLocale($locale)
+    public function setLocale(string $locale): self
     {
         $this->options['locale'] = $locale;
         $this->context->locale = $locale;
@@ -604,12 +591,13 @@ abstract class AbstractClient
      *
      * Требуется подключенный jQuery ($)
      *
-     * @param null|string $logout_url локальный роут для деавторизации пользователя
-     * @param null|string $tickets_endpoint полный адрес эндопоинта api билетов
+     * @param string|null $logout_url Локальный роут для деавторизации пользователя
+     * @param string|null $tickets_endpoint Полный адрес эндопоинта api билетов
      * @return UserOffice
      * @throws IdentityProviderException
+     * @deprecated
      */
-    public function getOnlineOffice($logout_url = null, $tickets_endpoint = null)
+    public function getOnlineOffice(string $logout_url = null, string $tickets_endpoint = null): UserOffice
     {
         $html = $this->provider->getOnlineOfficeHtml($this->getAccessToken(), $this->locale, $logout_url, $tickets_endpoint);
 
@@ -622,9 +610,12 @@ abstract class AbstractClient
 
     /**
      * @param bool $make_redirect_when_invalid_state
+     * @return self
      */
-    public function setMakeRedirectWhenInvalidState(bool $make_redirect_when_invalid_state)
+    public function setMakeRedirectWhenInvalidState(bool $make_redirect_when_invalid_state): self
     {
         $this->make_redirect_when_invalid_state = $make_redirect_when_invalid_state;
+
+        return $this;
     }
 }

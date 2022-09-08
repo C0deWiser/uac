@@ -1,5 +1,6 @@
 <?php
 
+namespace Codewiser\UAC\Tests;
 
 use Codewiser\UAC\Model\ResourceOwner;
 

@@ -2,39 +2,52 @@
 
 namespace Codewiser\UAC;
 
+use Codewiser\UAC\Contracts\CacheContract;
+use DateInterval;
+
 /**
  * Class ContextManager
  * @package Codewiser\UAC
- * @deprecated Use ContextContract
  *
- * Store some data in session
+ * Access to ContextContract
  *
- * @property $state
- * @property $locale
- * @property $response_type
- * @property $return_path
- * @property $run_in_popup
- * @property $access_token
+ * @property string|null $state
+ * @property string|null $locale
+ * @property string|null $response_type
+ * @property string|null $return_path
+ * @property boolean|null $run_in_popup
+ * @property string|null $access_token
  */
-abstract class AbstractContext
+class ContextManager
 {
     /**
      * Время жизни контекста. После этого он считается недействительным.
-     * @var string
+     *
+     * @var int|DateInterval
      */
-    protected $ttl = '3600';
+    protected $ttl = 3600;
     protected $stateValue;
     protected $contextData = array();
+
     /**
-     * Эти ключи сохраняем в контексте (то есть с привязкой к state), остальные — просто в сессии
+     * Эти ключи сохраняем в контексте (то есть с привязкой к state), остальные — просто так.
+     *
      * @var array
      */
     protected $contextKeys = array('response_type', 'return_path', 'run_in_popup', 'locale');
 
-    abstract protected function sessionSet($name, $value);
-    abstract protected function sessionGet($name);
-    abstract protected function sessionHas($name);
-    abstract protected function sessionDel($name);
+    /**
+     * @var CacheContract
+     */
+    protected $context;
+
+    /**
+     * @param CacheContract $context
+     */
+    public function __construct($context)
+    {
+        $this->context = $context;
+    }
 
     protected function sessionKey($state)
     {
@@ -48,23 +61,27 @@ abstract class AbstractContext
     {
         if ($this->stateValue) {
             $this->contextData['issued_at'] = time();
-            $this->sessionSet($this->sessionKey($this->stateValue), serialize($this->contextData));
+            $this->context->set($this->sessionKey($this->stateValue), $this->contextData, $this->ttl);
         }
     }
 
     /**
      * Контекст сохраняется в сессии с привязкой к значению state. Если такой есть в сессии, то он будет загружен в класс.
      * Контекст может быть загружен только один раз, после этого он уничтожается.
-     * @param $state
+     *
+     * @param string $state
      * @return boolean
      */
     protected function loadIfPossible($state)
     {
         $key = $this->sessionKey($state);
 
-        if ($this->sessionHas($key)) {
-            $contextData = unserialize($this->sessionGet($key));
-            $this->sessionDel($key);
+        $this->stateValue = null;
+        $this->contextData = [];
+
+        if ($this->context->has($key)) {
+            $contextData = $this->context->get($key);
+            $this->context->delete($key);
             if ($contextData && ($contextData['issued_at'] + (int)$this->ttl) > time()) {
                 $this->stateValue = $state;
                 $this->contextData = $contextData;
@@ -76,7 +93,8 @@ abstract class AbstractContext
 
     /**
      * Проверяет наличие сохраненного state, одновременно восстанавливая его контекст.
-     * @param $state
+     *
+     * @param string $state
      * @return bool
      */
     public function restoreContext($state)
@@ -91,7 +109,7 @@ abstract class AbstractContext
         } elseif (in_array($name, $this->contextKeys)) {
             return isset($this->contextData[$name]) ? $this->contextData[$name] : null;
         } else {
-            return $this->sessionGet($name);
+            return $this->context->get($name);
         }
     }
     public function __set($name, $value)
@@ -103,7 +121,7 @@ abstract class AbstractContext
             $this->contextData[$name] = $value;
             $this->saveIfPossible();
         } else {
-            $this->sessionSet($name, $value);
+            $this->context->set($name, $value);
         }
     }
     public function __isset($name)
@@ -113,14 +131,14 @@ abstract class AbstractContext
         } elseif (in_array($name, $this->contextKeys)) {
             return isset($this->contextData[$name]) && $this->contextData[$name];
         } else {
-            return $this->sessionHas($name);
+            return $this->context->has($name);
         }
     }
     public function __unset($name)
     {
         if ($name == 'state') {
             if ($this->stateValue) {
-                $this->sessionDel($this->sessionKey($this->stateValue));
+                $this->context->delete($this->sessionKey($this->stateValue));
                 $this->stateValue = null;
             }
         } elseif (in_array($name, $this->contextKeys)) {
@@ -129,7 +147,7 @@ abstract class AbstractContext
             }
             $this->saveIfPossible();
         } else {
-            $this->sessionDel($name);
+            $this->context->delete($name);
         }
     }
 
@@ -139,7 +157,7 @@ abstract class AbstractContext
     public function clearContext()
     {
         if ($this->stateValue) {
-            $this->sessionDel($this->sessionKey($this->stateValue));
+            $this->context->delete($this->sessionKey($this->stateValue));
             $this->stateValue = null;
         }
         $this->contextData = array();
@@ -157,5 +175,13 @@ abstract class AbstractContext
         } else {
             return $this->contextData;
         }
+    }
+
+    /**
+     * @param DateInterval|int $ttl
+     */
+    public function setTtl($ttl): void
+    {
+        $this->ttl = $ttl;
     }
 }

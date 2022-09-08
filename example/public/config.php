@@ -19,9 +19,6 @@ foreach ($variables as $key => $value) {
 
 require __DIR__ . '/../../vendor/autoload.php';
 require __DIR__ . '/../UacClient.php';
-require __DIR__ . '/../Context.php';
-$classLoader = new \Composer\Autoload\ClassLoader();
-$classLoader->addPsr4("Test\\", 'tests/Test', true);
-$classLoader->register();
+require __DIR__ . '/../Cache.php';
 
 //ini_set('display_errors', getenv('APP_DEBUG') ? 'on' : 'off');

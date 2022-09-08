@@ -8,83 +8,74 @@
 
 namespace Codewiser\UAC;
 
+use Codewiser\UAC\Contracts\CacheContract;
+
 /**
- * Класс для конфигурирования OAuth-клиента
- * @package UAC
+ * Класс для конфигурирования OAuth-клиента.
  *
- * @property-read string $urlAuthorize Адрес страницы запроса авторизации
- * @property-read string $urlAccessToken Адрес эндпоинта выдачи токенов доступа
- * @property-read string $urlResourceOwnerDetails Адрес эндпоинта получения профиля пользователя
- * @property-read string $urlTokenIntrospection Адрес эндпоитна проверки токенов
+ * @property-read string $urlAuthorize Адрес страницы запроса авторизации.
+ * @property-read string $urlAccessToken Адрес ресурса выдачи токенов доступа.
+ * @property-read string $urlResourceOwnerDetails Адрес ресурса получения профиля пользователя.
+ * @property-read string $urlTokenIntrospection Адрес ресурса проверки токенов.
  */
 class Connector
 {
     /**
-     * Идентификатор приложения
-     * @var string
+     * Идентификатор приложения.
      */
-    public $clientId;
+    public string $clientId;
 
     /**
-     * Секретный ключ приложения
-     * @var string
+     * Секретный ключ приложения.
      */
-    public $clientSecret;
+    public string $clientSecret;
 
     /**
-     * Адрес перенаправления
-     * @var string
+     * Адрес перенаправления.
      */
-    public $redirectUri;
+    public string $redirectUri;
 
     /**
-     * Адрес сервера авторизации
-     * @var string
+     * Адрес сервера авторизации.
      */
-    public $urlServer;
+    public string $urlServer;
 
     /**
-     * Адрес старого сервера авторизации (со старым л/к)
+     * Адрес старого сервера авторизации (со старым л/к).
+     */
+    public string $urlLegacyServer;
+
+    /**
+     * Collaborators passes directly to the Server object.
      *
-     * @var string
+     * @var array
      */
-    public $urlLegacyServer;
+    public array $collaborators = [];
 
-    public $collaborators;
+    public ContextManager $contextManager;
 
-    /**
-     * @var AbstractContext
-     */
-    public $context;
-
-    /**
-     * @var AbstractCache
-     */
-    public $cache;
+    public ?CacheContract $cache;
 
     /**
      * Verify server ssl.
-     *
-     * @var
      */
-    public $verify = true;
+    public bool $verify = true;
 
     /**
-     * Connector constructor
-     * @param string $urlServer Адрес сервера авторизации
-     * @param string $clientId Идентификатор приложения
-     * @param string $clientSecret Секретный ключ приложения
-     * @param string $redirectUri Адрес перенаправления
-     * @param AbstractContext $context
-     * @param AbstractCache|null $cache
+     * @param string $urlServer Адрес сервера авторизации.
+     * @param string $clientId Идентификатор приложения.
+     * @param string $clientSecret Секретный ключ приложения.
+     * @param string $redirectUri Адрес перенаправления.
+     * @param CacheContract $context Драйвер контекста.
+     * @param CacheContract|null $cache
      */
-    public function __construct($urlServer, $clientId, $clientSecret, $redirectUri, $context, $cache = null)
+    public function __construct(string $urlServer, string $clientId, string $clientSecret, string $redirectUri, CacheContract $context, CacheContract $cache = null)
     {
         $this->urlServer = $urlServer;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUri = $redirectUri;
-        $this->context = $context;
+        $this->contextManager = new ContextManager($context);
         $this->cache = $cache;
     }
 
@@ -102,7 +93,7 @@ class Connector
         }
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'clientId'                => $this->clientId,

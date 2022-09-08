@@ -8,7 +8,7 @@ class UacClient extends AbstractClient
 {
     protected static $client;
 
-    public static function instance()
+    public static function instance(): UacClient
     {
         if (self::$client) {
             return self::$client;
@@ -19,7 +19,8 @@ class UacClient extends AbstractClient
             getenv('CLIENT_ID'),
             getenv('CLIENT_SECRET'),
             getenv('REDIRECT_URI'),
-            new Context()
+            new Cache(),
+            new Cache()
         );
         $connector->verify = false;
         $connector->urlLegacyServer = getenv('OAUTH_LEGACY_SERVER_URL');

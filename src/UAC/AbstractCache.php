@@ -12,6 +12,8 @@ namespace Codewiser\UAC;
  * Обязательно добавляйте прфикс к используемым ключам.
  *
  * @package Codewiser\UAC
+ *
+ * @deprecated
  */
 abstract class AbstractCache
 {
@@ -20,7 +22,7 @@ abstract class AbstractCache
      *
      * @param string $key
      * @param mixed $value
-     * @param integer $timeout задается в секундах.
+     * @param integer $timeout Задается в секундах.
      * @return void
      */
     abstract public function put($key, $value, $timeout);
