@@ -1,6 +1,6 @@
 <?php
 
-class Cache implements \Codewiser\UAC\Contracts\CacheContract
+class CookieCache implements \Codewiser\UAC\Contracts\CacheContract
 {
 
     public function get($key, $default = null)
@@ -9,7 +9,7 @@ class Cache implements \Codewiser\UAC\Contracts\CacheContract
             throw new \InvalidArgumentException("Cache key must be a string value");
         }
 
-        return isset($_SESSION[$key]) ? unserialize($_SESSION[$key]) : $default;
+        return isset($_COOKIE[$key]) ? unserialize($_COOKIE[$key]): $default;
     }
 
     public function set($key, $value, $ttl = null)
@@ -18,7 +18,11 @@ class Cache implements \Codewiser\UAC\Contracts\CacheContract
             throw new \InvalidArgumentException("Cache key must be a string value");
         }
 
-        $_SESSION[$key] = serialize($value);
+        if ($ttl instanceof DateInterval) {
+            $ttl = $ttl->s;
+        }
+
+        setcookie($key, serialize($value), $ttl ? time() + $ttl : 0);
     }
 
     public function delete($key)
@@ -27,9 +31,7 @@ class Cache implements \Codewiser\UAC\Contracts\CacheContract
             throw new \InvalidArgumentException("Cache key must be a string value");
         }
 
-        if (isset($_SESSION[$key])) {
-            unset($_SESSION[$key]);
-        }
+        setcookie($key, null);
     }
 
     public function has($key)
@@ -38,6 +40,6 @@ class Cache implements \Codewiser\UAC\Contracts\CacheContract
             throw new \InvalidArgumentException("Cache key must be a string value");
         }
 
-        return isset($_SESSION[$key]);
+        return isset($_COOKIE[$key]);
     }
 }

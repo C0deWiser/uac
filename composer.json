@@ -3,7 +3,7 @@
   "description": "FC Zenit OAuth2.0 Client",
   "type": "library",
   "license": "MIT",
-  "version": "v5.0.1",
+  "version": "v5.1.0",
   "require": {
     "php": "^7.0|^8.0",
     "league/oauth2-client": "^2.4",

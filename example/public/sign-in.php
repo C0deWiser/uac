@@ -16,7 +16,8 @@ if (getenv('WEBHOOK_URI')) {
     $uac->setWebhook(getenv('WEBHOOK_URI') . '?time=' . time());
 }
 
+$location = $uac->getAuthorizationUrl();
 // Отправляем пользователя на сервер за авторизацией
-header('Location: ' . $uac->getAuthorizationUrl());
+header('Location: ' . $location);
 
 exit;

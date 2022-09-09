@@ -26,9 +26,19 @@ abstract class AbstractClient
 {
     protected Server $provider;
 
-    protected ContextManager $context;
+    /**
+     * Session store.
+     *
+     * @var CacheContract
+     */
+    public CacheContract $session;
 
-    protected ?CacheContract $cache;
+    /**
+     * True cache.
+     *
+     * @var CacheContract
+     */
+    public CacheContract $cache;
 
     protected array $options = [];
 
@@ -41,19 +51,29 @@ abstract class AbstractClient
 
     protected ?LoggerInterface $logger;
 
+    protected ContextManager $context;
+
     public function __construct(Connector $connector, LoggerInterface $logger = null)
     {
         $this->provider = new Server($connector->toArray(), $connector->collaborators);
-        $this->context = $connector->contextManager;
+        $this->session = $connector->session;
         $this->cache = $connector->cache;
         $this->logger = $logger;
         $this->provider->setLogger($logger);
         $this->provider->setLocale($this->locale);
 
-        if ($this->hasAccessToken() && $this->getAccessToken()->getExpires() && $this->getAccessToken()->hasExpired()) {
+        /*
+         * Keep state in absolute cache
+         */
+        $this->context = new ContextManager($this->cache);
+
+        $access_token = $this->getAccessToken();
+
+        if ($access_token && $access_token->getExpires() && $access_token->hasExpired()) {
             try {
-                $access_token = $this->grantRefreshToken($this->getAccessToken());
-                $this->setAccessToken($access_token);
+                $this->setAccessToken(
+                    $this->grantRefreshToken($access_token)
+                );
             } catch (IdentityProviderException $e) {
                 $this->unsetAccessToken();
             }
@@ -75,8 +95,8 @@ abstract class AbstractClient
 
         $url = $this->provider->getAuthorizationUrl($options);
 
-        $this->context->state = $this->provider->getState();
         $this->context->response_type = 'code';
+        $this->context->state = $this->provider->getState();
 
         if ($this->logger) {
             $this->logger->info('UAC Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
@@ -92,8 +112,8 @@ abstract class AbstractClient
     {
         $url = $this->provider->getDeauthorizationUrl();
 
-        $this->context->state = $this->provider->getState();
         $this->context->response_type = 'leave';
+        $this->context->state = $this->provider->getState();
 
         if ($this->logger) {
             $this->logger->info('UAC Prepare De-Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
@@ -225,7 +245,7 @@ abstract class AbstractClient
      */
     protected function setAccessToken(AccessTokenInterface $accessToken)
     {
-        $this->context->access_token = $accessToken;
+        $this->session->set('access_token', $accessToken);
     }
 
     /**
@@ -233,7 +253,7 @@ abstract class AbstractClient
      */
     public function getAccessToken(): ?AccessTokenInterface
     {
-        $accessToken = $this->context->access_token ?? null;
+        $accessToken = $this->session->get('access_token');
 
         if ($accessToken && (!is_object($accessToken) || !($accessToken instanceof AccessTokenInterface))) {
             $accessToken = null;
@@ -247,9 +267,7 @@ abstract class AbstractClient
      */
     public function unsetAccessToken()
     {
-        if (isset($this->context->access_token)) {
-            unset($this->context->access_token);
-        }
+        $this->session->delete('access_token');
     }
 
     /**
@@ -257,7 +275,7 @@ abstract class AbstractClient
      */
     public function hasAccessToken(): bool
     {
-        return !!$this->getAccessToken();
+        return $this->session->has('access_token');
     }
 
     /**

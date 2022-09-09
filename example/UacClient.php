@@ -19,8 +19,8 @@ class UacClient extends AbstractClient
             getenv('CLIENT_ID'),
             getenv('CLIENT_SECRET'),
             getenv('REDIRECT_URI'),
-            new Cache(),
-            new Cache()
+            new SessionCache(),
+            new SessionCache()
         );
         $connector->verify = false;
         $connector->urlLegacyServer = getenv('OAUTH_LEGACY_SERVER_URL');

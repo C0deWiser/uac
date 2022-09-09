@@ -52,9 +52,25 @@ class Connector
      */
     public array $collaborators = [];
 
+    /**
+     * @deprecated
+     * @var ContextManager
+     */
     public ContextManager $contextManager;
 
-    public ?CacheContract $cache;
+    /**
+     * Session store.
+     *
+     * @var CacheContract
+     */
+    public CacheContract $session;
+
+    /**
+     * True cache.
+     *
+     * @var CacheContract
+     */
+    public CacheContract $cache;
 
     /**
      * Verify server ssl.
@@ -66,16 +82,22 @@ class Connector
      * @param string $clientId Идентификатор приложения.
      * @param string $clientSecret Секретный ключ приложения.
      * @param string $redirectUri Адрес перенаправления.
-     * @param CacheContract $context Драйвер контекста.
-     * @param CacheContract|null $cache
+     * @param CacheContract $session Драйвер сессии (сессионный кеш).
+     * @param CacheContract $cache Драйвер кеша (абсолютный кеш).
      */
-    public function __construct(string $urlServer, string $clientId, string $clientSecret, string $redirectUri, CacheContract $context, CacheContract $cache = null)
+    public function __construct(
+        string        $urlServer,
+        string        $clientId,
+        string        $clientSecret,
+        string        $redirectUri,
+        CacheContract $session,
+        CacheContract $cache)
     {
         $this->urlServer = $urlServer;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUri = $redirectUri;
-        $this->contextManager = new ContextManager($context);
+        $this->session = $session;
         $this->cache = $cache;
     }
 

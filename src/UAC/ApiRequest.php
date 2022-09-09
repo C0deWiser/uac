@@ -15,7 +15,7 @@ use League\OAuth2\Client\Token\AccessToken;
 class ApiRequest
 {
     protected Server $provider;
-    protected ?CacheContract $cache;
+    protected CacheContract $cache;
     protected array $headers;
     protected array $parameters;
     protected ?string $token;
@@ -26,9 +26,9 @@ class ApiRequest
      * @param Server $provider
      * @param array $headers
      * @param array $parameters
-     * @param CacheContract|null $cache
+     * @param CacheContract $cache
      */
-    public function __construct(Server $provider, array $headers, array $parameters, CacheContract $cache = null)
+    public function __construct(Server $provider, array $headers, array $parameters, CacheContract $cache)
     {
         $this->provider = $provider;
         $this->cache = $cache;
@@ -102,10 +102,8 @@ class ApiRequest
 
         $key = 'introspected-' . $this->token;
 
-        if ($cache = $this->cache) {
-            if ($introspected = $cache->get($key)) {
-                return $introspected;
-            }
+        if ($introspected = $this->cache->get($key)) {
+            return $introspected;
         }
 
         try {
@@ -114,10 +112,8 @@ class ApiRequest
             throw new InvalidTokenException($e->getMessage());
         }
 
-        if ($cache) {
-            $timeout = 60 * 60 * 24; // 1 день
-            $cache->set($key, $introspected, $timeout);
-        }
+        $timeout = 60 * 60 * 24; // 1 день
+        $this->cache->set($key, $introspected, $timeout);
 
         return $introspected;
     }
@@ -134,10 +130,8 @@ class ApiRequest
 
         $key = 'resource-owner-' . $this->token;
 
-        if ($cache = $this->cache) {
-            if ($user = $cache->get($key)) {
-                return $user;
-            }
+        if ($user = $this->cache->get($key)) {
+            return $user;
         }
 
         try {
@@ -146,10 +140,8 @@ class ApiRequest
             throw new InvalidTokenException($e->getMessage());
         }
 
-        if ($cache) {
-            $timeout = 60 * 60 * 24; // 1 день
-            $cache->set($key, $user, $timeout);
-        }
+        $timeout = 60 * 60 * 24; // 1 день
+        $this->cache->set($key, $user, $timeout);
 
         return $user;
     }

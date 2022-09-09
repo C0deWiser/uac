@@ -19,6 +19,7 @@ foreach ($variables as $key => $value) {
 
 require __DIR__ . '/../../vendor/autoload.php';
 require __DIR__ . '/../UacClient.php';
-require __DIR__ . '/../Cache.php';
+require __DIR__ . '/../SessionCache.php';
+require __DIR__ . '/../CookieCache.php';
 
 //ini_set('display_errors', getenv('APP_DEBUG') ? 'on' : 'off');
