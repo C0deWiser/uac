@@ -74,7 +74,6 @@ class ContextManager
 
         if ($this->cache->has($key)) {
             $contextData = $this->cache->get($key);
-            $this->cache->delete($key);
             if ($contextData && ($contextData['issued_at'] + (int)$this->ttl) > time()) {
                 $this->stateValue = $state;
                 $this->contextData = $contextData;
