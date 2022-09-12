@@ -22,6 +22,8 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     protected $locale;
 
+    protected $resourceOwnerWith = [];
+
     /**
      * @var LoggerInterface|null
      */
@@ -56,6 +58,11 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     public function setLocale($locale)
     {
         $this->locale = $locale;
+    }
+
+    public function setResourceOwnerWith(string $with): void
+    {
+        $this->resourceOwnerWith[] = $with;
     }
 
     protected function getAllowedClientOptions(array $options)
@@ -298,6 +305,14 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
-        return parent::getResourceOwnerDetailsUrl($token) . '?locale=' . $this->locale;
+        $query = [
+            'locale' => $this->locale
+        ];
+
+        if ($this->resourceOwnerWith) {
+            $query['with'] = implode(',', $this->resourceOwnerWith);
+        }
+
+        return parent::getResourceOwnerDetailsUrl($token) . '?' . http_build_query($query);
     }
 }

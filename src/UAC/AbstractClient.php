@@ -620,6 +620,13 @@ abstract class AbstractClient
         );
     }
 
+    public function setResourceOwnerWith(string $with): self
+    {
+        $this->provider->setResourceOwnerWith($with);
+
+        return $this;
+    }
+
     /**
      * @param bool $make_redirect_when_invalid_state
      */
