@@ -3,6 +3,8 @@
 namespace Codewiser\UAC;
 
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Codewiser\UAC\Exception\IdentityProviderException;
 use Codewiser\UAC\Model\ResourceOwner;
@@ -22,19 +24,9 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     protected string $locale = 'ru';
 
-    protected ?LoggerInterface $logger;
+    protected ?LoggerInterface $logger = null;
 
-//    public function __construct(array $options = [], array $collaborators = [])
-//    {
-//        parent::__construct($options, $collaborators);
-//        if (isset($options['urlServer'])) {
-//            $this->urlServer = $options['urlServer'];
-//        }
-//    }
-    /**
-     * @param LoggerInterface|null $logger
-     */
-    public function setLogger($logger)
+    public function setLogger(?LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
@@ -42,7 +34,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
     /**
      * @return string
      */
-    public function getLocale()
+    public function getLocale(): string
     {
         return $this->locale;
     }
@@ -55,7 +47,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         $this->locale = $locale;
     }
 
-    protected function getAllowedClientOptions(array $options)
+    protected function getAllowedClientOptions(array $options): array
     {
         return ['timeout', 'proxy', 'verify'];
     }
@@ -76,22 +68,22 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         }
     }
 
-    public function getRedirectUri()
+    public function getRedirectUri(): string
     {
         return $this->redirectUri;
     }
 
-    public function getClientId()
+    public function getClientId(): string
     {
         return $this->clientId;
     }
 
-    public function getClientSecret()
+    public function getClientSecret(): string
     {
         return $this->clientSecret;
     }
 
-    public function getServerUrl()
+    public function getServerUrl(): string
     {
         return $this->urlServer;
     }
@@ -109,7 +101,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return parent::getAccessToken($grant, $options);
     }
 
-    protected function createRequest($method, $url, $token, array $options)
+    protected function createRequest($method, $url, $token, array $options): RequestInterface
     {
         $request = parent::createRequest($method, $url, $token, $options);
 
@@ -123,7 +115,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return $request;
     }
 
-    public function getRequest($method, $url, array $options = [])
+    public function getRequest($method, $url, array $options = []): RequestInterface
     {
         $request = parent::getRequest($method, $url, $options);
 
@@ -155,7 +147,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      * @return mixed
      * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function introspectToken($token)
+    public function introspectToken(string $token)
     {
         $params = [
             'client_id' => $this->clientId,
@@ -247,7 +239,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      * @param array $options
      * @return string DeAuthorization URL
      */
-    public function getDeauthorizationUrl(array $options = [])
+    public function getDeauthorizationUrl(array $options = []): string
     {
         $base = $this->getBaseAuthorizationUrl();
         $params = $this->getAuthorizationParameters($options);
@@ -274,13 +266,13 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
      *
      * @param string $method метод запроса (GET, POST, PUT, DELETE)
      * @param string $requestUri path и query-string
-     * @param AccessToken $token токен доступа
+     * @param AccessTokenInterface $token токен доступа
      * @return array
-     * @throws IdentityProviderException
+     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
      */
-    public function fetchResource($method, $requestUri, AccessToken $token)
+    public function fetchResource(string $method, string $requestUri, AccessTokenInterface $token, array $options = []): array
     {
-        $request = $this->getAuthenticatedRequest($method, $this->urlServer . $requestUri, $token);
+        $request = $this->getAuthenticatedRequest($method, $this->urlServer . $requestUri, $token, $options);
 
         $response = $this->getParsedResponse($request);
 
@@ -293,7 +285,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         return $response;
     }
 
-    public function getResourceOwnerDetailsUrl(AccessToken $token)
+    public function getResourceOwnerDetailsUrl(AccessToken $token): string
     {
         return parent::getResourceOwnerDetailsUrl($token) . '?locale=' . $this->locale;
     }

@@ -69,12 +69,11 @@ abstract class AbstractClient
 
         $access_token = $this->getAccessToken();
 
-        if ($access_token && $access_token->getExpires() && $access_token->hasExpired()) {
-            try {
-                $this->setAccessToken(
-                    $this->grantRefreshToken($access_token)
-                );
-            } catch (IdentityProviderException $e) {
+        if ($access_token) {
+            $access_token = $this->refreshAccessTokenIfRequired($access_token);
+            if ($access_token) {
+                $this->setAccessToken($access_token);
+            } else {
                 $this->unsetAccessToken();
             }
         }
@@ -635,5 +634,26 @@ abstract class AbstractClient
         $this->make_redirect_when_invalid_state = $make_redirect_when_invalid_state;
 
         return $this;
+    }
+
+    /**
+     * Проверяет токен и выпускает новый, если данный истек.
+     *
+     * Возвращает старый токен, если он еще действует; новый токен, если он был обновлен; null — если обновление не удалось.
+     *
+     * @param AccessTokenInterface $access_token
+     * @return AccessTokenInterface|null
+     */
+    public function refreshAccessTokenIfRequired(AccessTokenInterface $access_token): ?AccessTokenInterface
+    {
+        if ($access_token->getExpires() && $access_token->hasExpired()) {
+            try {
+                return $this->grantRefreshToken($access_token);
+            } catch (IdentityProviderException $e) {
+                return null;
+            }
+        } else {
+            return $access_token;
+        }
     }
 }
