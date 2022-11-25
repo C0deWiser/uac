@@ -30,6 +30,8 @@ class UacClient extends AbstractClient
         
         self::$client = new static($connector, $log);
 
+        self::$client->setResourceOwnerWith('loyalty_program');
+
         if (getenv('DISABLE_INVALID_STATE')) {
             self::$client->setMakeRedirectWhenInvalidState(false);
         }
