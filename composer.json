@@ -3,9 +3,8 @@
   "description": "FC Zenit OAuth2.0 Client",
   "type": "library",
   "license": "MIT",
-  "version": "v5.1.2",
   "require": {
-    "php": "^7.0|^8.0",
+    "php": "^7.4|^8.0",
     "league/oauth2-client": "^2.4",
     "nesbot/carbon": "*",
     "ext-json": "*"

@@ -24,7 +24,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
 
     protected string $locale = 'ru';
 
-    protected $resourceOwnerWith = [];
+    protected array $resourceOwnerWith = [];
 
     protected ?LoggerInterface $logger = null;
 
