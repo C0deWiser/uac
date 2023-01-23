@@ -40,7 +40,7 @@ class TokenIntrospection
         if ($this->active) {
             $this->scope = $data['scope'];
             $this->clientId = $data['client_id'];
-            $this->userName = $data['username'];
+            $this->userName = @$data['username'];
             $this->exp = $data['exp'];
             $this->iat = $data['iat'];
         }
