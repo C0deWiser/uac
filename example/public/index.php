@@ -28,16 +28,6 @@ if (!$at) {
 // Now store client access_token to the cache
 
 
-$response = $uac->provider->fetchResource('GET', '/api/loyalty-program/discount-levels', $at,
-    [
-        'headers' => [
-            'Accept' => 'application/json'
-        ],
-        'body' => ''
-    ]
-);
-echo "<pre>" . print_r($response, true) . "</pre>";
-
 if ($uac->hasAccessToken()) {
     ?>
     <p><a href="sign-out.php">Sign-out local (keep server authorization)</a></p>

@@ -385,6 +385,38 @@ abstract class AbstractClient
     }
 
     /**
+     * Выпускает временный короткоживущий ott токен, на основе обычного токена.
+     *
+     * Полученный токен можно использовать в виде get-параметра для быстрой авторизации на дружественных сайтах.
+     *
+     * @see https://pass.fc-zenit.ru/docs/oauth/ott.html#выпуск-одноразового-токена
+     * @param string $access_token
+     * @return AccessTokenInterface
+     * @throws IdentityProviderException
+     */
+    public function grantOneTimeToken(string $access_token): AccessTokenInterface
+    {
+        return $this->provider->getAccessToken('user_office', [
+            'token' => $access_token
+        ]);
+    }
+
+    /**
+     * Разменивает временный ott токен на обычный.
+     *
+     * @see https://pass.fc-zenit.ru/docs/oauth/ott.html#размен-одноразового-токена
+     * @param string $ott
+     * @return AccessTokenInterface
+     * @throws IdentityProviderException
+     */
+    public function exchangeOneTimeToken(string $ott): AccessTokenInterface
+    {
+        return $this->provider->getAccessToken('ott', [
+            'token' => $ott
+        ]);
+    }
+
+    /**
      * Проверяет состояние токена.
      *
      * @see https://pass.fc-zenit.ru/docs/oauth/token-introspection-endpoint.html
