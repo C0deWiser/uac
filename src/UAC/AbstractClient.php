@@ -5,6 +5,8 @@ namespace Codewiser\UAC;
 use Codewiser\UAC\Contracts\CacheContract;
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
+use Codewiser\UAC\Grants\OttGrant;
+use Codewiser\UAC\Grants\UserOfficeGrant;
 use Codewiser\UAC\Model\UserOffice;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
@@ -61,6 +63,10 @@ abstract class AbstractClient
         $this->logger = $logger;
         $this->provider->setLogger($logger);
         $this->provider->setLocale($this->locale);
+
+        // Register custom grants
+        $this->provider->getGrantFactory()->setGrant('ott', new OttGrant);
+        $this->provider->getGrantFactory()->setGrant('user_office', new UserOfficeGrant);
 
         /*
          * Keep state in absolute cache
