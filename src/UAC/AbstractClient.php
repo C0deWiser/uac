@@ -248,7 +248,7 @@ abstract class AbstractClient
     /**
      * Должен сохранить токен в сессионном хранилище.
      */
-    protected function setAccessToken(AccessTokenInterface $accessToken)
+    public function setAccessToken(AccessTokenInterface $accessToken)
     {
         $this->session->set('access_token', $accessToken);
     }

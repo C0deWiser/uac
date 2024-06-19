@@ -11,7 +11,6 @@ require 'config.php';
 $uac = UacClient::instance();
 
 try {
-
     $uac->callbackController($_GET);
 
     // Если пользователь откуда-то пришел, то пусть идет обратно
