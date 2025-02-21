@@ -711,9 +711,6 @@ abstract class AbstractClient
                 if ($new_token->getToken() !== $access_token->getToken()) {
                     $this->setAccessToken($new_token);
                 }
-            } else {
-                // Purge expired token
-                $this->unsetAccessToken();
             }
         }
     }
