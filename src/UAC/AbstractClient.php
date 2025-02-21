@@ -5,8 +5,8 @@ namespace Codewiser\UAC;
 use Codewiser\UAC\Contracts\CacheContract;
 use Codewiser\UAC\Exception\Api\InvalidTokenException;
 use Codewiser\UAC\Exception\Api\RequestException;
-use Codewiser\UAC\Grants\OttGrant;
-use Codewiser\UAC\Grants\UserOfficeGrant;
+use Codewiser\UAC\Grants\OttToTokenGrant;
+use Codewiser\UAC\Grants\TokenToOttGrant;
 use Codewiser\UAC\Model\UserOffice;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
@@ -65,8 +65,8 @@ abstract class AbstractClient
         $this->provider->setLocale($this->locale);
 
         // Register custom grants
-        $this->provider->getGrantFactory()->setGrant('ott', new OttGrant);
-        $this->provider->getGrantFactory()->setGrant('user_office', new UserOfficeGrant);
+        $this->provider->getGrantFactory()->setGrant('ott_to_token', new OttToTokenGrant);
+        $this->provider->getGrantFactory()->setGrant('token_to_ott', new TokenToOttGrant);
 
         /*
          * Keep state in absolute cache
@@ -402,7 +402,7 @@ abstract class AbstractClient
      */
     public function grantOneTimeToken(string $access_token): AccessTokenInterface
     {
-        return $this->provider->getAccessToken('user_office', [
+        return $this->provider->getAccessToken('token_to_ott', [
             'token' => $access_token
         ]);
     }
@@ -417,7 +417,7 @@ abstract class AbstractClient
      */
     public function exchangeOneTimeToken(string $ott): AccessTokenInterface
     {
-        return $this->provider->getAccessToken('ott', [
+        return $this->provider->getAccessToken('ott_to_token', [
             'token' => $ott
         ]);
     }
