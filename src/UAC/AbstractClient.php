@@ -73,16 +73,7 @@ abstract class AbstractClient
          */
         $this->context = new ContextManager($this->cache);
 
-        $access_token = $this->getAccessToken();
-
-        if ($access_token) {
-            $access_token = $this->refreshAccessTokenIfRequired($access_token);
-            if ($access_token) {
-                $this->setAccessToken($access_token);
-            } else {
-                $this->unsetAccessToken();
-            }
-        }
+        $this->refreshStoredAccessToken();
     }
 
     /**
@@ -251,6 +242,8 @@ abstract class AbstractClient
     public function setAccessToken(AccessTokenInterface $accessToken)
     {
         $this->session->set('access_token', $accessToken);
+
+        $this->refreshStoredAccessToken();
     }
 
     /**
@@ -693,12 +686,35 @@ abstract class AbstractClient
     {
         if ($access_token->getExpires() && $access_token->hasExpired()) {
             try {
-                return $this->grantRefreshToken($access_token);
+                if ($access_token->getRefreshToken()) {
+                    return $this->grantRefreshToken($access_token);
+                }
             } catch (IdentityProviderException $e) {
-                return null;
+                //
             }
-        } else {
-            return $access_token;
+
+            return null;
+        }
+
+        return $access_token;
+    }
+
+    protected function refreshStoredAccessToken()
+    {
+        $access_token = $this->getAccessToken();
+
+        if ($access_token) {
+            $new_token = $this->refreshAccessTokenIfRequired($access_token);
+
+            if ($new_token) {
+                // Store new token
+                if ($new_token->getToken() !== $access_token->getToken()) {
+                    $this->setAccessToken($new_token);
+                }
+            } else {
+                // Purge expired token
+                $this->unsetAccessToken();
+            }
         }
     }
 }
