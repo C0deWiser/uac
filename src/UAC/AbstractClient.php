@@ -253,11 +253,7 @@ abstract class AbstractClient
     {
         $accessToken = $this->session->get('access_token');
 
-        if ($accessToken && (!is_object($accessToken) || !($accessToken instanceof AccessTokenInterface))) {
-            $accessToken = null;
-        }
-
-        return $accessToken;
+        return $accessToken instanceof AccessTokenInterface ? $accessToken : null;
     }
 
     /**
@@ -425,7 +421,7 @@ abstract class AbstractClient
      */
     public function introspectToken(AccessTokenInterface $access_token): TokenIntrospection
     {
-        return new TokenIntrospection($this->provider->introspectToken($access_token->getToken()));
+        return new TokenIntrospection($this->provider->introspectToken($access_token));
     }
 
     /**
