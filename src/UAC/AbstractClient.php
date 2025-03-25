@@ -685,12 +685,16 @@ abstract class AbstractClient
     public function refreshAccessTokenIfRequired(AccessTokenInterface $access_token): ?AccessTokenInterface
     {
         if ($access_token->getExpires() && $access_token->hasExpired()) {
+            $this->logger->debug("UAC token expired");
             try {
                 if ($access_token->getRefreshToken()) {
+                    $this->logger->debug("UAC token has refresh, refreshing");
                     return $this->grantRefreshToken($access_token);
+                } else {
+                    $this->logger->debug("UAC token doesnt have refresh, skipping");
                 }
             } catch (IdentityProviderException $e) {
-                //
+                $this->logger->error("UAC token refreshing error: " . $e->getMessage());
             }
 
             return null;
@@ -709,8 +713,12 @@ abstract class AbstractClient
             if ($new_token) {
                 // Store new token
                 if ($new_token->getToken() !== $access_token->getToken()) {
+                    $this->logger->debug("UAC token was refreshed, store");
                     $this->setAccessToken($new_token);
                 }
+            } else {
+                $this->logger->debug("UAC token can not be refreshed, forget");
+                $this->unsetAccessToken();
             }
         }
     }
