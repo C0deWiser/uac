@@ -93,6 +93,7 @@ abstract class AbstractClient
 
         $this->context->response_type = 'code';
         $this->context->state = $this->provider->getState();
+        $this->context->oauth2pkceCode = $this->provider->getPkceCode();
 
         if ($this->logger) {
             $this->logger->info('UAC Prepare Authorization', ['url' => $url, 'context' => $this->context->toArray()]);
@@ -175,6 +176,8 @@ abstract class AbstractClient
                 }
                 exit('Invalid state');
             }
+
+            $this->provider->setPkceCode($this->context->oauth2pkceCode);
 
             if ($this->logger) {
                 $this->logger->debug('UAC Got context', $this->context->toArray());

@@ -16,6 +16,7 @@ use DateInterval;
  * @property string|null $response_type
  * @property string|null $return_path
  * @property boolean|null $run_in_popup
+ * @property string|null $oauth2pkceCode
  */
 class ContextManager
 {
@@ -33,7 +34,7 @@ class ContextManager
      *
      * @var array
      */
-    protected array $contextKeys = array('response_type', 'return_path', 'run_in_popup', 'locale');
+    protected array $contextKeys = array('response_type', 'return_path', 'run_in_popup', 'locale', 'oauth2pkceCode');
 
     protected CacheContract $cache;
 

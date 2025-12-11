@@ -9,6 +9,7 @@
 namespace Codewiser\UAC;
 
 use Codewiser\UAC\Contracts\CacheContract;
+use League\OAuth2\Client\Provider\AbstractProvider;
 
 /**
  * Класс для конфигурирования OAuth-клиента.
@@ -78,21 +79,21 @@ class Connector
     public bool $verify = true;
 
     /**
-     * @param string $urlServer Адрес сервера авторизации.
-     * @param string $clientId Идентификатор приложения.
-     * @param string $clientSecret Секретный ключ приложения.
-     * @param string $redirectUri Адрес перенаправления.
-     * @param CacheContract $session Драйвер сессии (сессионный кеш).
-     * @param CacheContract $cache Драйвер кеша (абсолютный кеш).
+     * @param  string  $urlServer  Адрес сервера авторизации.
+     * @param  string  $clientId  Идентификатор приложения.
+     * @param  string  $clientSecret  Секретный ключ приложения.
+     * @param  string  $redirectUri  Адрес перенаправления.
+     * @param  CacheContract  $session  Драйвер сессии (сессионный кеш).
+     * @param  CacheContract  $cache  Драйвер кеша (абсолютный кеш).
      */
     public function __construct(
-        string        $urlServer,
-        string        $clientId,
-        string        $clientSecret,
-        string        $redirectUri,
+        string $urlServer,
+        string $clientId,
+        string $clientSecret,
+        string $redirectUri,
         CacheContract $session,
-        CacheContract $cache)
-    {
+        CacheContract $cache
+    ) {
         $this->urlServer = $urlServer;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
@@ -129,6 +130,7 @@ class Connector
             'urlTokenIntrospection'   => $this->urlTokenIntrospection,
             'scopeSeparator'          => ' ',
             'verify'                  => $this->verify,
+            'pkceMethod'              => AbstractProvider::PKCE_METHOD_S256
         ];
     }
 
