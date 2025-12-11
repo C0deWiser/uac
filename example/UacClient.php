@@ -63,7 +63,6 @@ class UacClient extends AbstractClient
             'user_password',
             'user_address',
             'user_cars',
-            //'mobile',
         ];
     }
 

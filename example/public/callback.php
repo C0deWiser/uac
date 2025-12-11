@@ -22,16 +22,6 @@ try {
 
 } catch (\Codewiser\UAC\Exception\OauthResponseException $e) {
 
-    if ($e->getMessage() == 'access_denied') {
-        // Авторизацию прервал сам пользователь
-        // Поэтому не считаем это ошибкой
-        if (!$uac->closePopup()) {
-            $_SESSION['oauth-exception'] = serialize($e);
-            header('Location: ' . $uac->getReturnPath('/'));
-            exit();
-        }
-    }
-
     echo "Error {$e->getCode()}: {$e->getMessage()}";
     if ($e->getDescription()) {
         echo "<p>{$e->getDescription()}</p>";
@@ -40,5 +30,6 @@ try {
         echo '<a href="' . $e->getUri() . '">' . $e->getUri() . '</a>';
     }
     echo "<pre>{$e->getResponseBody()}</pre>";
+    echo "<p><a href='/'>Home</a></p>";
     die();
 }

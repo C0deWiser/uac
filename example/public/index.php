@@ -43,8 +43,8 @@ if ($uac->hasAccessToken()) {
     if ($user->picture) {
         echo "<img src='{$user->picture}' alt='' width='128'>";
     }
-    echo "<pre>" . print_r($user->toArray(), true) . "</pre>";
-    echo "<pre>" . print_r($user->rules()->toArray(), true) . "</pre>";
+    echo "<pre>".print_r($user->toArray(), true)."</pre>";
+    echo "<pre>".print_r($user->rules()->toArray(), true)."</pre>";
 
 } else {
     ?>
