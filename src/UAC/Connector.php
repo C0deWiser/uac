@@ -8,8 +8,11 @@
 
 namespace Codewiser\UAC;
 
+use League\OAuth2\Client\Provider\AbstractProvider;
+
 /**
  * Класс для конфигурирования OAuth-клиента
+ *
  * @package UAC
  *
  * @property-read string $urlAuthorize Адрес страницы запроса авторизации
@@ -116,6 +119,7 @@ class Connector
             'urlTokenIntrospection'   => $this->urlTokenIntrospection,
             'scopeSeparator'          => ' ',
             'verify'                  => $this->verify,
+            'pkceMethod'              => AbstractProvider::PKCE_METHOD_S256
         ];
     }
 
