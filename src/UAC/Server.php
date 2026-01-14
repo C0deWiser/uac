@@ -60,7 +60,7 @@ class Server extends \League\OAuth2\Client\Provider\GenericProvider
         $this->locale = $locale;
     }
 
-    public function setResourceOwnerWith(string $with): void
+    public function setResourceOwnerWith($with)
     {
         $this->resourceOwnerWith[] = $with;
     }

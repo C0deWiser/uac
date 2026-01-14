@@ -561,7 +561,7 @@ abstract class AbstractClient
         $this->context->run_in_popup = $runInPopup;
 
         if ($this->logger)
-            $this->logger("Set run_in_popup: {$runInPopup}");
+            $this->logger()->debug("Set run_in_popup: {$runInPopup}");
 
         return $this;
     }
@@ -623,7 +623,7 @@ abstract class AbstractClient
         );
     }
 
-    public function setResourceOwnerWith(string $with): self
+    public function setResourceOwnerWith($with)
     {
         $this->provider->setResourceOwnerWith($with);
 
@@ -633,7 +633,7 @@ abstract class AbstractClient
     /**
      * @param bool $make_redirect_when_invalid_state
      */
-    public function setMakeRedirectWhenInvalidState(bool $make_redirect_when_invalid_state)
+    public function setMakeRedirectWhenInvalidState($make_redirect_when_invalid_state)
     {
         $this->make_redirect_when_invalid_state = $make_redirect_when_invalid_state;
     }

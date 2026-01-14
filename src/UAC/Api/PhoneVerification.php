@@ -30,11 +30,12 @@ class PhoneVerification extends Basement
 
     /**
      * Подтверждение номера телефона
-     * @param string $phone номер телефона
-     * @param string $code проверочный код
-     * @param AccessToken|null $accessToken токен доступа вместо текущего пользовательского
-     * @return array
-     * @throws \UAC\Exception\IdentityProviderException
+     *
+     * @param  string  $phone  номер телефона
+     * @param  string  $code  проверочный код
+     * @param  AccessToken|null  $accessToken  токен доступа вместо текущего пользовательского
+     *
+     * @throws \Codewiser\UAC\Exception\IdentityProviderException
      */
     public function PUT($phone, $code, AccessToken $accessToken = null)
     {
