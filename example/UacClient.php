@@ -57,6 +57,7 @@ class UacClient extends AbstractClient
     public function defaultScopes()
     {
         return [
+            'read',
             'user_read',
             'user_write',
             'user_phone',

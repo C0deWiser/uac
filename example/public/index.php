@@ -34,6 +34,7 @@ if ($uac->hasAccessToken()) {
     <p><a href="sign-out.php?both">Sign-out local and from server</a></p>
     <p><a href="protected.php">Protected page (Authorization required)</a></p>
     <p><a href="elk">ELK</a></p>
+    <p><a href="refresh.php">Refresh token</a></p>
     <?php
     echo 'Access Token ' . $uac->getAccessToken()->getToken() . '<br>';
     echo "<pre>" . print_r($uac->introspectToken($uac->getAccessToken())->toArray(), true) . "</pre>";
