@@ -82,12 +82,12 @@ abstract class AbstractClient
     public function getAuthorizationUrl(array $options = []): string
     {
         $options = array_merge(
-            $this->options,
-            $options,
             [
                 'scope' => $this->defaultScopes(),
                 'authorization_hint' => $this->defaultAuthorizationHint()
             ],
+            $this->options,
+            $options,
         );
 
         $url = $this->provider->getAuthorizationUrl($options);
