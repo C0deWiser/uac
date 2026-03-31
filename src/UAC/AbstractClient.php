@@ -79,14 +79,15 @@ abstract class AbstractClient
     /**
      * Формирует адрес авторизации, запоминает контекст, возвращает url.
      */
-    public function getAuthorizationUrl(): string
+    public function getAuthorizationUrl(array $options = []): string
     {
         $options = array_merge(
+            $this->options,
+            $options,
             [
                 'scope' => $this->defaultScopes(),
                 'authorization_hint' => $this->defaultAuthorizationHint()
             ],
-            $this->options
         );
 
         $url = $this->provider->getAuthorizationUrl($options);

@@ -37,15 +37,16 @@ if ($uac->hasAccessToken()) {
     <p><a href="refresh.php">Refresh token</a></p>
     <?php
     echo 'Access Token ' . $uac->getAccessToken()->getToken() . '<br>';
-    echo "<pre>" . print_r($uac->introspectToken($uac->getAccessToken())->toArray(), true) . "</pre>";
+    dump($uac->introspectToken($uac->getAccessToken())->toArray());
 
     $user = $uac->setLocale('en')->getResourceOwner();
 
     if ($user->picture) {
         echo "<img src='{$user->picture}' alt='' width='128'>";
     }
-    echo "<pre>".print_r($user->toArray(), true)."</pre>";
-    echo "<pre>".print_r($user->rules()->toArray(), true)."</pre>";
+
+    dump($user->toArray());
+    dump($user->rules()->toArray());
 
 } else {
     ?>
